@@ -1,0 +1,2034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StrongerPushups.com – Daily Push-Up Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================================
+       DESIGN TOKENS — Light Grey / Red-Accent Theme
+       ============================================================ */
+    :root {
+      --brand:        #dc2626;   /* red-600    */
+      --brand-light:  #ef4444;   /* red-500    */
+      --brand-dark:   #b91c1c;   /* red-700    */
+      --brand-bg:     #fef2f2;   /* red-50     */
+      --brand-border: rgba(220,38,38,.18);
+      --brand-glow:   rgba(220,38,38,.12);
+
+      --bg:           #f8fafc;   /* slate-50   */
+      --surface:      #ffffff;
+      --surface-e:    #ffffff;   /* elevated — extra shadow */
+      --surface-f:    #ffffff;   /* floating  — brand shadow */
+
+      --border:       #e2e8f0;   /* slate-200  */
+      --border-str:   #cbd5e1;   /* slate-300  */
+
+      --text:         #0f172a;   /* slate-900  */
+      --muted:        #64748b;   /* slate-500  */
+      --subtle:       #94a3b8;   /* slate-400  */
+
+      --r-sm:10px; --r-md:14px; --r-lg:18px; --r-xl:22px;
+    }
+
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+    body {
+      font-family:'Inter',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.7;
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+
+    h1,h2,h3,h4,h5 {
+      font-family:'Oswald',sans-serif;
+      letter-spacing:-0.02em;
+      line-height:1.1;
+    }
+
+    /* ============================================================
+       CARD DEPTH SYSTEM
+       ============================================================ */
+    .card {
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--r-lg);
+      box-shadow:0 1px 3px rgba(0,0,0,.05),0 4px 12px rgba(0,0,0,.04);
+    }
+    .card-e {
+      background:var(--surface-e);
+      border:1px solid var(--border);
+      border-radius:var(--r-lg);
+      box-shadow:
+        0 1px 3px rgba(0,0,0,.06),
+        0 6px 20px rgba(0,0,0,.07),
+        0 0 0 1px rgba(220,38,38,.03);
+    }
+    .card-f {
+      background:var(--surface-f);
+      border:1px solid var(--brand-border);
+      border-radius:var(--r-lg);
+      box-shadow:
+        0 2px 8px rgba(0,0,0,.06),
+        0 12px 32px rgba(0,0,0,.08),
+        0 4px 16px var(--brand-glow);
+    }
+
+    /* ============================================================
+       BUTTONS
+       ============================================================ */
+    .btn-p {
+      display:inline-flex;align-items:center;justify-content:center;gap:6px;
+      background:var(--brand);color:#fff;
+      font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.04em;font-size:15px;
+      border:none;border-radius:var(--r-sm);padding:10px 20px;cursor:pointer;
+      box-shadow:0 2px 12px var(--brand-glow);
+      transition:transform .15s cubic-bezier(.34,1.56,.64,1),
+                 box-shadow .15s ease,opacity .15s ease;
+    }
+    .btn-p:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(220,38,38,.28)}
+    .btn-p:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+    .btn-p:active{transform:translateY(0) scale(.96);opacity:.9}
+
+    .btn-s {
+      display:inline-flex;align-items:center;justify-content:center;gap:6px;
+      background:var(--brand-bg);color:var(--brand);
+      border:1px solid var(--brand-border);
+      font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.03em;font-size:14px;
+      border-radius:var(--r-sm);padding:8px 16px;cursor:pointer;
+      transition:transform .15s cubic-bezier(.34,1.56,.64,1),
+                 background .15s ease,opacity .15s ease;
+    }
+    .btn-s:hover{background:#fee2e2;transform:translateY(-1px)}
+    .btn-s:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+    .btn-s:active{transform:scale(.96);opacity:.85}
+
+    .btn-g {
+      display:inline-flex;align-items:center;justify-content:center;gap:4px;
+      background:transparent;color:var(--muted);
+      border:1px solid var(--border-str);
+      font-family:'Inter',sans-serif;font-size:12px;
+      border-radius:8px;padding:5px 12px;cursor:pointer;
+      transition:color .15s ease,border-color .15s ease,
+                 transform .15s ease,opacity .15s ease;
+    }
+    .btn-g:hover{color:var(--text);border-color:#94a3b8;transform:translateY(-1px)}
+    .btn-g:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+    .btn-g:active{transform:scale(.95);opacity:.8}
+
+    /* Quick-add (+1 +5 +10) */
+    .btn-q {
+      flex:1;
+      background:#f1f5f9;color:var(--brand);
+      border:1px solid var(--border);
+      font-family:'Oswald',sans-serif;font-weight:600;font-size:20px;
+      border-radius:var(--r-sm);padding:12px 0;cursor:pointer;
+      box-shadow:0 1px 4px rgba(0,0,0,.05);
+      transition:transform .12s cubic-bezier(.34,1.56,.64,1),
+                 background .15s ease,border-color .15s ease,
+                 box-shadow .15s ease;
+    }
+    .btn-q:hover{
+      background:var(--brand-bg);
+      border-color:var(--brand-border);
+      transform:translateY(-3px) scale(1.03);
+      box-shadow:0 6px 18px var(--brand-glow);
+    }
+    .btn-q:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+    .btn-q:active{transform:scale(.93)}
+
+    /* ============================================================
+       INPUTS
+       ============================================================ */
+    .inp {
+      background:#fff;color:var(--text);
+      border:1px solid var(--border);
+      border-radius:var(--r-sm);
+      font-family:'Inter',sans-serif;font-size:15px;
+      padding:10px 14px;outline:none;width:100%;
+      transition:border-color .15s ease,box-shadow .15s ease;
+    }
+    .inp:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(220,38,38,.1)}
+    .inp::placeholder{color:var(--subtle)}
+
+    /* ============================================================
+       STAT CARDS
+       ============================================================ */
+    .stat {
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--r-md);padding:14px 12px;text-align:center;
+      box-shadow:0 1px 4px rgba(0,0,0,.05);
+    }
+    .stat-val{
+      font-family:'Oswald',sans-serif;font-size:26px;font-weight:700;
+      color:var(--brand);letter-spacing:-.02em;line-height:1;
+    }
+    .stat-lbl{
+      font-size:10px;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.08em;margin-top:4px;
+    }
+
+    /* ============================================================
+       LEVEL BADGES
+       ============================================================ */
+    .badge{
+      display:inline-flex;align-items:center;gap:6px;
+      padding:5px 14px;border-radius:999px;
+      font-family:'Oswald',sans-serif;font-weight:600;
+      font-size:13px;letter-spacing:.06em;text-transform:uppercase;
+    }
+
+    /* ============================================================
+       PROGRESS RING
+       ============================================================ */
+    .ring-bg{stroke:#e2e8f0}
+    .ring-fill{
+      stroke:var(--brand);stroke-linecap:round;
+      filter:drop-shadow(0 0 4px rgba(220,38,38,.35));
+      transition:stroke-dashoffset .65s cubic-bezier(.34,1.56,.64,1);
+    }
+
+    /* ============================================================
+       ANIMATIONS (transform + opacity only per CLAUDE.md)
+       ============================================================ */
+    @keyframes count-bump{
+      0%{transform:scale(1)}50%{transform:scale(1.09)}100%{transform:scale(1)}
+    }
+    .bump{animation:count-bump .28s cubic-bezier(.34,1.56,.64,1)}
+
+    .fade-up{opacity:0;transform:translateY(14px)}
+    .fade-up.vis{
+      opacity:1;transform:translateY(0);
+      transition:opacity .4s ease,transform .4s cubic-bezier(.34,1.56,.64,1);
+    }
+
+    @keyframes logo-pulse{0%,100%{opacity:1}50%{opacity:.72}}
+    .logo-pulse{animation:logo-pulse 3s ease infinite}
+
+    /* ============================================================
+       LAYOUT
+       ============================================================ */
+    .main-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:20px;
+    }
+    @media(min-width:640px){
+      .stats-row{grid-template-columns:repeat(4,1fr)!important}
+    }
+    @media(min-width:1024px){
+      .main-grid{grid-template-columns:2fr 1fr;align-items:start}
+      .sidebar{position:sticky;top:72px}
+    }
+
+    /* ============================================================
+       BAR CHART
+       ============================================================ */
+    .bar{
+      flex:1;display:flex;flex-direction:column;
+      justify-content:flex-end;position:relative;
+      min-width:0;height:100%;
+    }
+    .bar-fill{
+      width:100%;border-radius:4px 4px 2px 2px;
+      transition:transform .3s cubic-bezier(.34,1.56,.64,1),opacity .2s ease;
+    }
+    .bar-fill:hover{opacity:.72}
+    .bar-tip{
+      display:none;position:absolute;bottom:calc(100% + 6px);left:50%;
+      transform:translateX(-50%);
+      background:var(--text);color:#fff;
+      border-radius:6px;padding:3px 8px;
+      font-size:11px;white-space:nowrap;z-index:20;
+      pointer-events:none;
+    }
+    .bar:hover .bar-tip{display:block}
+
+    /* ============================================================
+       MODAL
+       ============================================================ */
+    .modal-bg{
+      position:fixed;inset:0;z-index:60;
+      background:rgba(15,23,42,.55);backdrop-filter:blur(4px);
+      display:flex;align-items:center;justify-content:center;
+      padding:20px;
+      opacity:0;pointer-events:none;
+      transition:opacity .22s ease;
+    }
+    .modal-bg.open{opacity:1;pointer-events:all}
+    .modal-box{
+      width:100%;max-width:480px;
+      transform:translateY(18px) scale(.97);opacity:0;
+      transition:transform .32s cubic-bezier(.34,1.56,.64,1),opacity .28s ease;
+    }
+    .modal-bg.open .modal-box{transform:translateY(0) scale(1);opacity:1}
+
+    /* ============================================================
+       CHALLENGE CHECKBOXES
+       ============================================================ */
+    .day-cb{display:flex;flex-direction:column;align-items:center;gap:5px}
+    .day-cb input[type=checkbox]{
+      appearance:none;width:22px;height:22px;
+      border:2px solid var(--border-str);border-radius:7px;
+      cursor:pointer;background:#fff;position:relative;
+      transition:background .15s ease,border-color .15s ease,
+                 transform .15s cubic-bezier(.34,1.56,.64,1);
+    }
+    .day-cb input[type=checkbox]:checked{background:var(--brand);border-color:var(--brand)}
+    .day-cb input[type=checkbox]:checked::after{
+      content:'✓';position:absolute;inset:0;
+      display:flex;align-items:center;justify-content:center;
+      color:#fff;font-size:13px;font-weight:700;line-height:1;
+    }
+    .day-cb input[type=checkbox]:hover{border-color:var(--brand);transform:scale(1.12)}
+    .day-cb input[type=checkbox]:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+    .day-cb label{
+      font-size:10px;color:var(--muted);
+      text-transform:uppercase;letter-spacing:.06em;cursor:pointer;
+    }
+
+    /* ============================================================
+       MODAL CLOSE BUTTON
+       ============================================================ */
+    .btn-close{
+      background:#f1f5f9;border:1px solid var(--border);
+      color:var(--muted);cursor:pointer;border-radius:8px;
+      width:32px;height:32px;font-size:20px;line-height:1;
+      display:flex;align-items:center;justify-content:center;
+      transition:opacity .15s ease,transform .15s ease;
+    }
+    .btn-close:hover{opacity:.65;transform:scale(1.05)}
+    .btn-close:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+    .btn-close:active{transform:scale(.92)}
+
+    /* ============================================================
+       NAV LINKS
+       ============================================================ */
+    .nav-link{
+      font-family:'Oswald',sans-serif;font-weight:500;font-size:14px;
+      letter-spacing:.04em;color:var(--muted);text-decoration:none;
+      transition:color .15s ease,opacity .15s ease;
+      padding:4px 2px;
+    }
+    .nav-link:hover{color:var(--text)}
+    .nav-link:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:3px}
+    .nav-link.active{color:var(--brand)}
+
+    /* ============================================================
+       FIRST VISIT BANNER
+       ============================================================ */
+    #firstBanner{
+      background:linear-gradient(135deg,#fef2f2 0%,#fff5f5 100%);
+      border:1px solid rgba(220,38,38,.2);
+      border-radius:var(--r-lg);
+      padding:18px 20px;
+      display:none;
+      position:relative;
+    }
+
+    /* ============================================================
+       SCROLLBAR
+       ============================================================ */
+    ::-webkit-scrollbar{width:5px}
+    ::-webkit-scrollbar-track{background:var(--bg)}
+    ::-webkit-scrollbar-thumb{background:rgba(220,38,38,.25);border-radius:3px}
+    ::-webkit-scrollbar-thumb:hover{background:var(--brand)}
+
+    /* ============================================================
+       CHALLENGE PROGRAM SECTION
+       ============================================================ */
+
+    /* Week selector pills */
+    .week-btn {
+      font-family:'Oswald',sans-serif;
+      font-size:14px;font-weight:500;letter-spacing:.03em;
+      padding:10px 22px;
+      border-radius:999px;
+      border:1.5px solid var(--border-str);
+      background:var(--surface);color:var(--muted);
+      cursor:pointer;white-space:nowrap;
+      box-shadow:0 1px 3px rgba(0,0,0,.05);
+      transition:color .15s ease,background .15s ease,
+                 border-color .15s ease,box-shadow .15s ease;
+    }
+    .week-btn:hover{
+      border-color:var(--brand);color:var(--brand);
+      box-shadow:0 2px 8px rgba(220,38,38,.12);
+    }
+    .week-btn:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+    .week-btn:active{transform:scale(.96)}
+    .week-btn.active{
+      background:var(--brand);border-color:var(--brand);color:#fff;
+      box-shadow:0 4px 18px rgba(220,38,38,.28),0 2px 6px rgba(0,0,0,.07);
+    }
+    .week-btn-final{border-color:#1e293b;color:#1e293b}
+    .week-btn-final:hover{border-color:#1e293b;color:#1e293b;
+      box-shadow:0 2px 8px rgba(30,41,59,.15)}
+    .week-btn-final.active{
+      background:#1e293b;border-color:#1e293b;color:#fff;
+      box-shadow:0 4px 18px rgba(30,41,59,.28),0 2px 6px rgba(0,0,0,.1);
+    }
+
+    /* 3-day grid — mobile stack, desktop 3-col */
+    .day-cards-grid{display:grid;grid-template-columns:1fr;gap:16px}
+    @media(min-width:720px){
+      .day-cards-grid{grid-template-columns:repeat(3,1fr);align-items:start}
+    }
+
+    /* Set table */
+    .set-table{width:100%;border-collapse:collapse;margin:14px 0 16px;font-size:13px}
+    .set-table th,.set-table td{
+      padding:9px 10px;border-bottom:1px solid var(--border);
+    }
+    .set-table th{
+      font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;
+      text-transform:uppercase;letter-spacing:.07em;text-align:center;
+      background:var(--bg);color:var(--muted);
+    }
+    .set-table th:first-child{text-align:left}
+    .set-table td:first-child{
+      color:var(--muted);font-size:11px;
+      text-transform:uppercase;letter-spacing:.06em;width:36%;
+    }
+    .set-table td:not(:first-child){
+      font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;
+      color:var(--text);text-align:center;
+    }
+    .set-table tr:last-child td{border-bottom:none}
+    .set-table tr.max-row td{
+      color:var(--brand);font-family:'Oswald',sans-serif;
+      font-size:13px;font-weight:600;text-align:center;
+    }
+    .set-table tr.max-row td:first-child{text-align:left}
+    .set-table th.track-active{background:var(--brand);color:#fff}
+    .set-table td.track-active{color:var(--brand);background:rgba(220,38,38,.06)}
+
+    /* Section tag pill */
+    .cp-tag{
+      display:inline-flex;align-items:center;gap:7px;
+      background:var(--brand-bg);border:1px solid var(--brand-border);
+      border-radius:999px;padding:4px 14px;
+      font-family:'Oswald',sans-serif;font-size:11px;
+      letter-spacing:.1em;color:var(--brand);text-transform:uppercase;
+      margin-bottom:14px;
+    }
+
+    /* Home top grid: Challenge Starter + Welcome box */
+    .home-top-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:20px;
+      align-items:start;
+    }
+    @media(min-width:820px){
+      .home-top-grid{grid-template-columns:400px 1fr}
+    }
+
+    /* Welcome box bullet list */
+    .welcome-list{
+      margin:10px 0 16px 0;
+      padding-left:0;
+      list-style:none;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .welcome-list li{
+      display:flex;
+      align-items:flex-start;
+      gap:10px;
+      font-size:14px;
+      color:var(--muted);
+      line-height:1.6;
+    }
+    .welcome-list li::before{
+      content:'';
+      flex-shrink:0;
+      width:6px;height:6px;
+      border-radius:50%;
+      background:var(--brand);
+      margin-top:8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ══════════════════════════════════════════════════════════
+       HEADER / NAV
+  ══════════════════════════════════════════════════════════ -->
+  <header style="
+    border-bottom:1px solid var(--border);
+    padding:0 24px;
+    height:64px;
+    display:flex;align-items:center;justify-content:space-between;
+    background:rgba(255,255,255,.9);
+    backdrop-filter:blur(12px);
+    position:sticky;top:0;z-index:40;
+    box-shadow:0 1px 8px rgba(0,0,0,.06);
+  ">
+    <!-- Logo -->
+    <a href="index.html" style="display:flex;align-items:center;gap:10px;text-decoration:none">
+      <div class="logo-pulse" style="
+        width:34px;height:34px;background:var(--brand);border-radius:9px;
+        display:flex;align-items:center;justify-content:center;
+        box-shadow:0 2px 10px rgba(220,38,38,.3);flex-shrink:0;
+      ">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round">
+          <path d="M6 4v16M18 4v16M2 9h4M18 9h4M2 15h4M18 15h4"/>
+        </svg>
+      </div>
+      <span style="font-family:'Oswald',sans-serif;font-size:17px;font-weight:600;
+        color:var(--text);letter-spacing:-.01em;">StrongerPushups.com</span>
+    </a>
+
+    <!-- Nav -->
+    <nav style="display:flex;align-items:center;gap:24px">
+      <a href="index.html"  class="nav-link active">Home</a>
+      <a href="about.html"  class="nav-link">About</a>
+      <button id="headerSigninLink" style="display:none"></button>
+      <button id="headerSignupBtn"  style="display:none"></button>
+    </nav>
+  </header>
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       MAIN
+  ══════════════════════════════════════════════════════════ -->
+  <main style="max-width:1240px;margin:0 auto;padding:24px 16px 56px">
+
+    <!-- Header date row -->
+    <p id="hdrDate" style="font-size:11px;color:var(--muted);letter-spacing:.06em;
+      text-transform:uppercase;margin-bottom:16px"></p>
+
+    <!-- First-visit banner (shown if no test recorded yet) -->
+    <div id="firstBanner">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:0">
+          <div style="display:inline-flex;align-items:center;gap:6px;
+            background:var(--brand);color:#fff;border-radius:999px;
+            padding:3px 10px;font-family:'Oswald',sans-serif;
+            font-size:10px;letter-spacing:.08em;margin-bottom:8px">
+            FIRST TIME HERE?
+          </div>
+          <h3 style="font-size:16px;color:var(--text);margin-bottom:4px">
+            Take the quick strength test to find your perfect starting week.
+          </h3>
+          <p style="font-size:12px;color:var(--muted);line-height:1.6">
+            This personalizes your 3×/Week Push-Up Challenge so you progress safely and effectively.
+          </p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <button class="btn-p" onclick="openModal();dismissBanner()"
+            style="padding:9px 18px;font-size:14px">
+            Test My Max Push-Ups →
+          </button>
+          <button class="btn-close" onclick="dismissBanner()" aria-label="Dismiss" style="flex-shrink:0">×</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Home top grid: Challenge Starter (left) + Welcome box (right) -->
+    <div class="home-top-grid" style="margin-top:20px">
+
+      <!-- ── Challenge Starter ──────────────────────────────── -->
+      <div>
+        <div class="card-f" style="padding:28px">
+
+          <!-- Pill tag -->
+          <div style="display:inline-flex;align-items:center;gap:7px;
+            background:var(--brand-bg);border:1px solid var(--brand-border);
+            border-radius:999px;padding:4px 12px;margin-bottom:12px">
+            <span style="width:6px;height:6px;background:var(--brand);border-radius:50%;
+              display:inline-block"></span>
+            <span style="font-size:10px;color:var(--brand);text-transform:uppercase;
+              letter-spacing:.1em;font-weight:600;font-family:'Oswald',sans-serif">
+              Strength Test
+            </span>
+          </div>
+
+          <h2 style="font-size:21px;color:var(--text);margin-bottom:6px">CHALLENGE STARTER</h2>
+          <p style="font-size:12px;color:var(--muted);line-height:1.65;margin-bottom:20px">
+            Find your level and get the right starting week for our 3×/week push-up program.
+          </p>
+
+          <!-- Previous test info -->
+          <div id="prevTest" style="display:none;
+            margin-bottom:16px;padding:12px 14px;
+            background:var(--brand-bg);border:1px solid var(--brand-border);
+            border-radius:var(--r-sm)">
+            <p style="font-size:10px;color:var(--muted);text-transform:uppercase;
+              letter-spacing:.08em;margin-bottom:6px">Last Test</p>
+            <div style="display:flex;align-items:center;justify-content:space-between;
+              flex-wrap:wrap;gap:6px">
+              <div>
+                <span id="prevMax" style="font-family:'Oswald',sans-serif;
+                  font-size:26px;color:var(--brand)">0</span>
+                <span style="font-size:12px;color:var(--muted);margin-left:4px">reps</span>
+              </div>
+              <span id="prevDate" style="font-size:10px;color:var(--subtle)"></span>
+            </div>
+            <div id="prevBadge" style="margin-top:8px"></div>
+          </div>
+
+          <!-- First-time prompt (shown when no test recorded) -->
+          <div id="noTestPrompt" style="display:none;
+            margin-bottom:14px;padding:10px 14px;
+            background:#fffbeb;border:1px solid #fcd34d;
+            border-radius:var(--r-sm)">
+            <p style="font-size:11px;color:#92400e;line-height:1.55">
+              <strong>No test recorded yet.</strong><br>
+              Take the quick test below — it personalizes your 3×/Week Challenge starting week.
+            </p>
+          </div>
+
+          <!-- CTA -->
+          <button class="btn-p" id="testCTA" onclick="openModal()"
+            style="width:100%;padding:14px 20px;font-size:16px;margin-bottom:0">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z"/>
+            </svg>
+            Test Your Max Push-Ups
+          </button>
+
+          <!-- Challenge tracker (shown after starting) -->
+          <div id="challengeSec" style="display:none;
+            border-top:1px solid var(--border);margin-top:22px;padding-top:20px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;
+              margin-bottom:14px">
+              <div>
+                <p style="font-size:10px;color:var(--muted);text-transform:uppercase;
+                  letter-spacing:.08em;margin-bottom:3px">Active Challenge</p>
+                <h3 id="cwLabel" style="font-size:18px;color:var(--text)">WEEK 1</h3>
+                <p id="cwDesc" style="font-size:11px;color:var(--muted);
+                  margin-top:3px;line-height:1.5"></p>
+              </div>
+              <button class="btn-g" onclick="resetChallenge()"
+                style="font-size:11px;margin-top:2px">End</button>
+            </div>
+
+            <p style="font-size:11px;color:var(--muted);margin-bottom:12px">
+              3 sessions / week — check each day completed:
+            </p>
+
+            <div style="display:flex;justify-content:space-around;
+              padding:16px 12px;background:#f8fafc;border:1px solid var(--border);
+              border-radius:var(--r-sm);margin-bottom:12px">
+              <div class="day-cb"><input type="checkbox" id="dMon" onchange="saveDayCheck('Mon')"><label for="dMon">Mon</label></div>
+              <div class="day-cb"><input type="checkbox" id="dWed" onchange="saveDayCheck('Wed')"><label for="dWed">Wed</label></div>
+              <div class="day-cb"><input type="checkbox" id="dFri" onchange="saveDayCheck('Fri')"><label for="dFri">Fri</label></div>
+            </div>
+
+            <p id="cwProg" style="font-size:11px;color:var(--muted)"></p>
+          </div>
+
+        </div><!-- /card-f -->
+      </div><!-- /challenge-starter col -->
+
+      <!-- ── Welcome box ────────────────────────────────────── -->
+      <div class="card" style="padding:32px 36px">
+
+        <h2 style="font-size:22px;color:var(--text);margin-bottom:14px;letter-spacing:-.02em">
+          Welcome to StrongerPushups.com
+        </h2>
+
+        <p style="font-size:14px;color:var(--muted);line-height:1.75;margin-bottom:16px">
+          The simple, no-equipment site built to help you get seriously strong,
+          master your push-ups, and boost your overall health and fitness.
+        </p>
+
+        <p style="font-size:14px;color:var(--text);font-weight:600;margin-bottom:6px">
+          Track your daily progress the way that works for you:
+        </p>
+
+        <ul class="welcome-list">
+          <li>Jot down your numbers manually, or</li>
+          <li>
+            <span>
+              <button onclick="openSignupModal()" style="
+                background:none;border:none;padding:0;cursor:pointer;
+                font-family:'Inter',sans-serif;font-size:14px;
+                color:var(--brand);font-weight:600;text-decoration:underline;
+                text-underline-offset:2px;
+              " onfocus="this.style.outline='2px solid var(--brand)'"
+                onblur="this.style.outline='none'">Sign up free</button>
+              to save your streak, stats, max test results, and personalized
+              3×/week challenge progress forever — so you never lose momentum.
+            </span>
+          </li>
+        </ul>
+
+        <p style="font-size:14px;color:var(--muted);line-height:1.75;margin-bottom:16px">
+          Start with a quick strength test, get your recommended starting week,
+          and build real power, one push-up at a time.
+        </p>
+
+        <p style="font-size:15px;color:var(--text);font-weight:600;line-height:1.5">
+          Let's get stronger together. 💪
+        </p>
+
+      </div><!-- /welcome box -->
+
+    </div><!-- /home-top-grid -->
+  </main>
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       CHALLENGE PROGRAM SECTION
+  ══════════════════════════════════════════════════════════ -->
+  <section id="challengeProgram" style="
+    background:#fff;
+    border-top:1px solid var(--border);
+    border-bottom:1px solid var(--border);
+  ">
+    <div style="max-width:1240px;margin:0 auto;padding:60px 20px 72px">
+
+      <!-- ── Section header ──────────────────────────────────── -->
+      <div style="text-align:center;margin-bottom:52px">
+        <div class="cp-tag">
+          <span style="width:6px;height:6px;background:var(--brand);
+            border-radius:50%;display:inline-block"></span>
+          StrongerPushups.com · 3×/Week Program
+        </div>
+        <h2 style="
+          font-size:clamp(26px,4vw,42px);color:var(--text);
+          margin-bottom:14px;letter-spacing:-.025em;
+        ">
+          Your Personalized 3×/Week<br>Push-Up Challenge
+        </h2>
+        <p style="font-size:15px;color:var(--muted);max-width:460px;
+          margin:0 auto;line-height:1.65">
+          Train <strong style="color:var(--text)">3 times per week</strong> for best results
+        </p>
+      </div>
+
+      <!-- ── Week selector pills ─────────────────────────────── -->
+      <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;
+        margin-bottom:48px" role="group" aria-label="Select program week">
+        <button class="week-btn" id="weekBtn1" onclick="selectWeek(1)">Week 1</button>
+        <button class="week-btn" id="weekBtn2" onclick="selectWeek(2)">Week 2</button>
+        <button class="week-btn" id="weekBtn3" onclick="selectWeek(3)">Week 3</button>
+        <button class="week-btn" id="weekBtn4" onclick="selectWeek(4)">Week 4</button>
+        <button class="week-btn" id="weekBtn5" onclick="selectWeek(5)">Week 5</button>
+        <button class="week-btn" id="weekBtn6" onclick="selectWeek(6)">Week 6</button>
+        <button class="week-btn week-btn-final" id="weekBtn7" onclick="selectWeek(7)">🏆 Final Test</button>
+      </div>
+
+      <!-- ── Default / no-selection state ───────────────────── -->
+      <div id="weekDefault">
+        <div style="
+          max-width:520px;margin:0 auto;text-align:center;
+          padding:52px 36px;
+          border:1.5px dashed var(--border-str);
+          border-radius:var(--r-xl);
+          background:var(--bg);
+        ">
+          <!-- Icon -->
+          <div style="
+            width:64px;height:64px;border-radius:50%;
+            background:var(--brand-bg);
+            display:flex;align-items:center;justify-content:center;
+            margin:0 auto 18px;
+          ">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+              stroke="var(--brand)" stroke-width="2.2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z"/>
+            </svg>
+          </div>
+          <h3 id="cpDefaultTitle"
+            style="font-size:20px;color:var(--text);margin-bottom:10px">
+            Select a week above to preview the program
+          </h3>
+          <p id="cpDefaultDesc"
+            style="font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:28px">
+            Take the strength test to get your recommended starting week,
+            or browse any week below.
+          </p>
+          <button class="btn-p" onclick="openModal()"
+            style="padding:12px 28px;font-size:15px">
+            Take the Strength Test →
+          </button>
+        </div>
+      </div><!-- /weekDefault -->
+
+      <!-- ── Week detail view (shown when week selected) ─────── -->
+      <div id="weekDetail" style="display:none">
+
+        <!-- ── Final Test panel (shown only for week 7) ── -->
+        <div id="finalTestContent" style="display:none">
+          <div style="text-align:center;padding:48px 24px 40px">
+            <div style="font-size:52px;margin-bottom:20px">🏆</div>
+            <p style="font-size:11px;color:#1e293b;text-transform:uppercase;
+              letter-spacing:.12em;font-family:'Oswald',sans-serif;margin-bottom:8px">
+              Week 7
+            </p>
+            <h3 style="font-size:30px;color:var(--text);font-family:'Oswald',sans-serif;
+              font-weight:700;letter-spacing:-.01em;margin-bottom:16px">
+              FINAL ASSESSMENT
+            </h3>
+            <p id="finalTestDesc" style="font-size:14px;color:var(--muted);line-height:1.75;
+              max-width:480px;margin:0 auto 32px">
+              You've completed 6 weeks of progressive training. Time to test your maximum
+              push-ups again and see how much stronger you've become.
+            </p>
+            <button class="btn-p" onclick="openModal()"
+              style="padding:14px 36px;font-size:16px;letter-spacing:.03em">
+              Test Your Max Push-Ups →
+            </button>
+            <p style="font-size:12px;color:var(--subtle);margin-top:20px;line-height:1.6">
+              Rest for at least 24 hours before testing. Warm up with light movement first.
+            </p>
+          </div>
+          <div style="
+            background:#f0fdf4;border:1px solid #86efac;
+            border-radius:var(--r-sm);padding:14px 18px;margin-top:8px;
+          ">
+            <p style="font-size:12px;color:#166534;line-height:1.65">
+              <strong>Compare your result</strong> to your Week 1 starting max to measure
+              your total improvement over the 7-week program.
+            </p>
+          </div>
+          <div style="margin-top:16px;text-align:right">
+            <button class="btn-g" onclick="selectWeek(null)"
+              style="font-size:12px">← Overview</button>
+          </div>
+        </div><!-- /finalTestContent -->
+
+        <!-- ── Normal week content (weeks 1–6) ─────────── -->
+        <div id="weekNormal">
+
+        <!-- Intro banner -->
+        <div style="
+          background:var(--brand-bg);border:1px solid var(--brand-border);
+          border-radius:var(--r-lg);padding:24px 28px;margin-bottom:24px;
+          display:flex;align-items:flex-start;justify-content:space-between;
+          gap:16px;flex-wrap:wrap;
+        ">
+          <div>
+            <p style="font-size:11px;color:var(--brand);text-transform:uppercase;
+              letter-spacing:.1em;font-family:'Oswald',sans-serif;margin-bottom:4px">
+              Active Week
+            </p>
+            <h3 id="wDetailTitle"
+              style="font-size:26px;color:var(--text);margin-bottom:6px">
+              WEEK 1
+            </h3>
+            <p id="wDetailIntro"
+              style="font-size:13px;color:var(--muted);line-height:1.6">
+              Week 1 – Build strength progressively. Perform on 3 non-consecutive days.
+            </p>
+            <p id="wTrackBadge" style="display:none;margin-top:8px;font-size:12px;
+              color:var(--brand);font-family:'Oswald',sans-serif;font-weight:500;
+              letter-spacing:.04em"></p>
+          </div>
+          <button class="btn-g" onclick="selectWeek(null)"
+            style="font-size:12px;white-space:nowrap;flex-shrink:0;margin-top:4px">
+            ← Overview
+          </button>
+        </div>
+
+        <!-- Schedule note -->
+        <div style="
+          background:#f0fdf4;border:1px solid #86efac;
+          border-radius:var(--r-sm);padding:12px 16px;margin-bottom:28px;
+        ">
+          <p style="font-size:12px;color:#166534;line-height:1.65">
+            <strong>Rest 60–120 seconds between sets.</strong> Longer if needed.
+            Finish each session with a max-rep set if comfortable.
+          </p>
+        </div>
+
+        <!-- ── 3 Day cards ──────────────────────────────────── -->
+        <div class="day-cards-grid">
+
+          <!-- Day 1: Monday -->
+          <div class="card-e" style="padding:24px">
+            <div style="display:flex;align-items:flex-start;
+              justify-content:space-between;margin-bottom:14px">
+              <div>
+                <span style="font-family:'Oswald',sans-serif;font-size:11px;
+                  color:var(--brand);text-transform:uppercase;letter-spacing:.1em">
+                  Day 1
+                </span>
+                <h3 style="font-size:20px;color:var(--text);margin-top:3px">MONDAY</h3>
+              </div>
+              <div style="
+                width:38px;height:38px;border-radius:10px;
+                background:var(--brand-bg);border:1px solid var(--brand-border);
+                display:flex;align-items:center;justify-content:center;flex-shrink:0;
+              ">
+                <span style="font-family:'Oswald',sans-serif;font-size:16px;
+                  color:var(--brand);font-weight:600">M</span>
+              </div>
+            </div>
+
+            <table id="setTable1" class="set-table">
+              <tbody id="setBody1">
+                <tr><td>Set 1</td><td>—</td></tr>
+                <tr><td>Set 2</td><td>—</td></tr>
+                <tr><td>Set 3</td><td>—</td></tr>
+                <tr><td>Set 4</td><td>—</td></tr>
+                <tr><td>Set 5</td><td>—</td></tr>
+                <tr class="max-row"><td>Max Set</td><td>Max effort →</td></tr>
+              </tbody>
+            </table>
+
+            <p style="
+              font-size:11px;color:var(--subtle);line-height:1.55;
+              padding:10px 12px;background:var(--bg);
+              border-radius:var(--r-sm);margin-bottom:16px;
+            ">
+              Personalized for your max push-ups — adjustments appear
+              here once you complete the strength test.
+            </p>
+
+            <button class="btn-p" style="width:100%;padding:11px;font-size:14px">
+              ✓ Mark Day Complete
+            </button>
+          </div><!-- /Day 1 -->
+
+          <!-- Day 2: Wednesday -->
+          <div class="card-e" style="padding:24px">
+            <div style="display:flex;align-items:flex-start;
+              justify-content:space-between;margin-bottom:14px">
+              <div>
+                <span style="font-family:'Oswald',sans-serif;font-size:11px;
+                  color:var(--brand);text-transform:uppercase;letter-spacing:.1em">
+                  Day 2
+                </span>
+                <h3 style="font-size:20px;color:var(--text);margin-top:3px">WEDNESDAY</h3>
+              </div>
+              <div style="
+                width:38px;height:38px;border-radius:10px;
+                background:var(--brand-bg);border:1px solid var(--brand-border);
+                display:flex;align-items:center;justify-content:center;flex-shrink:0;
+              ">
+                <span style="font-family:'Oswald',sans-serif;font-size:16px;
+                  color:var(--brand);font-weight:600">W</span>
+              </div>
+            </div>
+
+            <table id="setTable2" class="set-table">
+              <tbody id="setBody2">
+                <tr><td>Set 1</td><td>—</td></tr>
+                <tr><td>Set 2</td><td>—</td></tr>
+                <tr><td>Set 3</td><td>—</td></tr>
+                <tr><td>Set 4</td><td>—</td></tr>
+                <tr><td>Set 5</td><td>—</td></tr>
+                <tr class="max-row"><td>Max Set</td><td>Max effort →</td></tr>
+              </tbody>
+            </table>
+
+            <p style="
+              font-size:11px;color:var(--subtle);line-height:1.55;
+              padding:10px 12px;background:var(--bg);
+              border-radius:var(--r-sm);margin-bottom:16px;
+            ">
+              Personalized for your max push-ups — adjustments appear
+              here once you complete the strength test.
+            </p>
+
+            <button class="btn-p" style="width:100%;padding:11px;font-size:14px">
+              ✓ Mark Day Complete
+            </button>
+          </div><!-- /Day 2 -->
+
+          <!-- Day 3: Friday -->
+          <div class="card-e" style="padding:24px">
+            <div style="display:flex;align-items:flex-start;
+              justify-content:space-between;margin-bottom:14px">
+              <div>
+                <span style="font-family:'Oswald',sans-serif;font-size:11px;
+                  color:var(--brand);text-transform:uppercase;letter-spacing:.1em">
+                  Day 3
+                </span>
+                <h3 style="font-size:20px;color:var(--text);margin-top:3px">FRIDAY</h3>
+              </div>
+              <div style="
+                width:38px;height:38px;border-radius:10px;
+                background:var(--brand-bg);border:1px solid var(--brand-border);
+                display:flex;align-items:center;justify-content:center;flex-shrink:0;
+              ">
+                <span style="font-family:'Oswald',sans-serif;font-size:16px;
+                  color:var(--brand);font-weight:600">F</span>
+              </div>
+            </div>
+
+            <table id="setTable3" class="set-table">
+              <tbody id="setBody3">
+                <tr><td>Set 1</td><td>—</td></tr>
+                <tr><td>Set 2</td><td>—</td></tr>
+                <tr><td>Set 3</td><td>—</td></tr>
+                <tr><td>Set 4</td><td>—</td></tr>
+                <tr><td>Set 5</td><td>—</td></tr>
+                <tr class="max-row"><td>Max Set</td><td>Max effort →</td></tr>
+              </tbody>
+            </table>
+
+            <p style="
+              font-size:11px;color:var(--subtle);line-height:1.55;
+              padding:10px 12px;background:var(--bg);
+              border-radius:var(--r-sm);margin-bottom:16px;
+            ">
+              Personalized for your max push-ups — adjustments appear
+              here once you complete the strength test.
+            </p>
+
+            <button class="btn-p" style="width:100%;padding:11px;font-size:14px">
+              ✓ Mark Day Complete
+            </button>
+          </div><!-- /Day 3 -->
+
+        </div><!-- /day-cards-grid -->
+
+        </div><!-- /weekNormal -->
+
+      </div><!-- /weekDetail -->
+
+    </div><!-- /inner -->
+  </section><!-- /challengeProgram -->
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════════════════════════ -->
+  <footer style="
+    border-top:1px solid var(--border);
+    padding:20px 24px;text-align:center;
+    background:#fff;
+  ">
+    <p style="font-size:12px;color:var(--subtle)">
+      © 2026 StrongerPushups.com – Get stronger, one push-up at a time.
+    </p>
+  </footer>
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       TEST MODAL
+  ══════════════════════════════════════════════════════════ -->
+  <div class="modal-bg" id="modal" onclick="handleBgClick(event)"
+    role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-box card-e" style="padding:32px;border-radius:var(--r-xl)">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
+        <h2 id="modalTitle" style="font-size:22px;color:var(--text)">MAX PUSH-UP TEST</h2>
+        <button class="btn-close" onclick="closeModal()" aria-label="Close modal">×</button>
+      </div>
+
+      <div style="
+        background:#f0fdf4;border:1px solid #86efac;
+        border-radius:var(--r-sm);padding:14px 16px;margin-bottom:22px;
+      ">
+        <p style="font-size:12px;color:#166534;line-height:1.7">
+          Do as many <strong>strict push-ups</strong> as you can in a single set —
+          full range of motion, chest near floor, arms fully extended at top.
+          Count only clean-form reps.
+        </p>
+      </div>
+
+      <!-- Form -->
+      <div id="mForm">
+        <label style="display:block;font-family:'Oswald',sans-serif;font-size:12px;
+          color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">
+          Your max reps
+        </label>
+        <input type="number" id="maxIn" class="inp"
+          style="font-size:40px;font-family:'Oswald',sans-serif;
+            text-align:center;padding:18px;margin-bottom:18px;letter-spacing:-.02em"
+          placeholder="0" min="0" max="999"
+          onkeydown="if(event.key==='Enter')submitTest()">
+        <button class="btn-p" onclick="submitTest()"
+          style="width:100%;padding:15px;font-size:17px">
+          Get My Level →
+        </button>
+      </div>
+
+      <!-- Result (hidden initially) -->
+      <div id="mResult" class="fade-up" style="display:none">
+
+        <div style="text-align:center;margin-bottom:22px">
+          <div id="rBadge" class="badge"
+            style="font-size:18px;padding:10px 26px;margin:0 auto 10px"></div>
+          <p style="font-size:36px;font-family:'Oswald',sans-serif;
+            color:var(--text);letter-spacing:-.02em">
+            <span id="rMax">0</span>
+            <span style="font-size:16px;color:var(--muted);margin-left:4px">reps</span>
+          </p>
+          <p id="rText" style="font-size:13px;color:var(--muted);line-height:1.6;margin-top:6px"></p>
+        </div>
+
+        <!-- Week recommendation -->
+        <div style="
+          background:var(--brand-bg);border:1px solid var(--brand-border);
+          border-radius:var(--r-md);padding:18px 20px;margin-bottom:14px;
+        ">
+          <p style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;
+            color:var(--muted);margin-bottom:10px">Recommended Starting Point</p>
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="
+              width:50px;height:50px;background:var(--brand);border-radius:12px;
+              display:flex;align-items:center;justify-content:center;flex-shrink:0;
+              box-shadow:0 4px 16px rgba(220,38,38,.28);
+            ">
+              <span id="rWeekNum" style="font-family:'Oswald',sans-serif;
+                font-size:24px;font-weight:700;color:#fff;line-height:1">1</span>
+            </div>
+            <div>
+              <p id="rWeekLbl"  style="font-family:'Oswald',sans-serif;
+                font-size:16px;color:var(--text)">WEEK 1</p>
+              <p id="rWeekDesc" style="font-size:11px;color:var(--muted);
+                margin-top:3px;line-height:1.55"></p>
+            </div>
+          </div>
+        </div>
+
+        <p style="font-size:10px;color:var(--subtle);line-height:1.6;margin-bottom:18px">
+          Rough guide based on common fitness norms. Retest every 4 weeks to track your progress.
+        </p>
+
+        <div style="display:flex;gap:8px">
+          <button class="btn-p" id="startBtn"
+            style="flex:1;padding:12px 10px;font-size:14px">
+            Start Challenge from This Week
+          </button>
+          <button class="btn-g" onclick="closeModal()" style="padding:12px 14px">Close</button>
+        </div>
+      </div><!-- /mResult -->
+
+    </div><!-- /modal-box -->
+  </div><!-- /modal -->
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       SIGN-UP MODAL
+  ══════════════════════════════════════════════════════════ -->
+  <div class="modal-bg" id="signupModal" onclick="handleSignupBgClick(event)"
+    role="dialog" aria-modal="true" aria-labelledby="signupTitle">
+    <div class="modal-box card-e" style="padding:32px;border-radius:var(--r-xl)">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <h2 id="signupTitle" style="font-size:22px;color:var(--text)">CREATE YOUR ACCOUNT</h2>
+        <button class="btn-close" onclick="closeSignupModal()" aria-label="Close">×</button>
+      </div>
+
+      <!-- ── Profile view (signed in) ─────────────── -->
+      <div id="welcomeBack" style="display:none">
+        <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:var(--r-sm);
+          padding:16px;margin-bottom:18px;text-align:center">
+          <p style="font-size:14px;color:#166534;font-weight:600">Signed in ✓</p>
+          <p id="welcomeEmail" style="font-size:12px;color:#15803d;margin-top:4px"></p>
+        </div>
+        <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:18px">
+          Your push-up data is saved locally on this device and persists between sessions.
+        </p>
+        <button class="btn-g" onclick="signOut()"
+          style="width:100%;justify-content:center;padding:10px">
+          Sign Out
+        </button>
+      </div>
+
+      <!-- ── Sign-in form view (account exists, not signed in) ── -->
+      <div id="signinForm" style="display:none">
+        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px">
+          Welcome back! Enter your credentials to sign in.
+        </p>
+
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px">
+          <div>
+            <label style="display:block;font-size:12px;color:var(--muted);
+              margin-bottom:5px;font-weight:500">Email address</label>
+            <input type="email" id="siEmail" class="inp"
+              placeholder="you@example.com"
+              onkeydown="if(event.key==='Enter')document.getElementById('siPass').focus()">
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;color:var(--muted);
+              margin-bottom:5px;font-weight:500">Password</label>
+            <input type="password" id="siPass" class="inp"
+              placeholder="Your password"
+              onkeydown="if(event.key==='Enter')handleSignIn()">
+          </div>
+        </div>
+
+        <div id="signinError" style="display:none;
+          background:#fef2f2;border:1px solid #fca5a5;border-radius:var(--r-sm);
+          padding:12px;margin-bottom:14px">
+          <p id="signinErrorText" style="font-size:12px;color:#dc2626"></p>
+        </div>
+
+        <button class="btn-p" onclick="handleSignIn()"
+          style="width:100%;padding:13px;font-size:16px;margin-bottom:14px">
+          Sign In
+        </button>
+
+        <p style="font-size:11px;color:var(--subtle);text-align:center">
+          Don't have an account yet?
+          <button onclick="showModalView('signupForm')" style="
+            background:none;border:none;color:var(--brand);cursor:pointer;
+            font-family:'Inter',sans-serif;font-size:11px;font-weight:600;
+            padding:0;text-decoration:underline;
+          " onfocus="this.style.outline='2px solid var(--brand)'"
+            onblur="this.style.outline='none'">Sign up free →</button>
+        </p>
+      </div><!-- /signinForm -->
+
+      <!-- ── Sign-up form view (no account yet) ─── -->
+      <div id="signupForm" style="display:none">
+        <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px">
+          Save your account details so your streak and progress are linked to your email.
+          <em style="font-size:11px;display:block;margin-top:4px;color:var(--subtle)">
+            Stored locally on your device — no server needed.
+          </em>
+        </p>
+
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px">
+          <div>
+            <label style="display:block;font-size:12px;color:var(--muted);
+              margin-bottom:5px;font-weight:500">Email address</label>
+            <input type="email" id="sigEmail" class="inp"
+              placeholder="you@example.com"
+              onkeydown="if(event.key==='Enter')document.getElementById('sigPass').focus()">
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;color:var(--muted);
+              margin-bottom:5px;font-weight:500">Password</label>
+            <input type="password" id="sigPass" class="inp"
+              placeholder="Min. 6 characters"
+              onkeydown="if(event.key==='Enter')document.getElementById('sigPassConfirm').focus()">
+          </div>
+          <div>
+            <label style="display:block;font-size:12px;color:var(--muted);
+              margin-bottom:5px;font-weight:500">Confirm Password</label>
+            <input type="password" id="sigPassConfirm" class="inp"
+              placeholder="Re-enter your password"
+              onkeydown="if(event.key==='Enter')handleSignup()">
+          </div>
+        </div>
+
+        <!-- Success message (hidden) -->
+        <div id="signupSuccess" style="display:none;
+          background:#f0fdf4;border:1px solid #86efac;border-radius:var(--r-sm);
+          padding:14px;margin-bottom:14px;text-align:center">
+          <p style="font-size:14px;color:#166534;font-weight:600">
+            ✓ Account created!
+          </p>
+          <p style="font-size:12px;color:#4ade80;margin-top:4px">
+            Your data is now saved persistently on this device.
+          </p>
+        </div>
+
+        <!-- Error message (hidden) -->
+        <div id="signupError" style="display:none;
+          background:#fef2f2;border:1px solid #fca5a5;border-radius:var(--r-sm);
+          padding:12px;margin-bottom:14px">
+          <p id="signupErrorText" style="font-size:12px;color:#dc2626"></p>
+        </div>
+
+        <button class="btn-p" onclick="handleSignup()"
+          style="width:100%;padding:13px;font-size:16px">
+          Create Account
+        </button>
+
+        <p style="font-size:10px;color:var(--subtle);margin-top:12px;text-align:center;
+          line-height:1.5">
+          No data is sent to any server. Everything stays on your device.
+        </p>
+      </div><!-- /signupForm -->
+
+    </div>
+  </div><!-- /signupModal -->
+
+
+  <!-- ══════════════════════════════════════════════════════════
+       JAVASCRIPT
+  ══════════════════════════════════════════════════════════ -->
+  <script>
+  // ─────────────────────────────────────────────────
+  // STATE & PERSISTENCE
+  // ─────────────────────────────────────────────────
+  const KEY         = 'pushup_v2';
+  const USER_KEY    = 'su_user';        // { email, password, joined }
+  const SESSION_KEY = 'su_session';     // 'active' | null
+  const BANNER_KEY  = 'su_banner_dismissed';
+
+  function defaultState() {
+    return {
+      log:                {},   // { "YYYY-MM-DD": number }
+      goal:               50,
+      pushUpMax:          null, // number | null
+      testDate:           null, // "YYYY-MM-DD" | null
+      challengeStartWeek: null, // 1-4 | null
+      completions:        {},   // { "YYYY-Www-Mon": true, ... }
+    };
+  }
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return defaultState();
+      return Object.assign(defaultState(), JSON.parse(raw));
+    } catch { return defaultState(); }
+  }
+
+  function save(s) { localStorage.setItem(KEY, JSON.stringify(s)); }
+
+  let S = load();
+
+  // ─────────────────────────────────────────────────
+  // USER AUTH (localStorage-only)
+  // ─────────────────────────────────────────────────
+  function getUser() {
+    try { return JSON.parse(localStorage.getItem(USER_KEY)); }
+    catch { return null; }
+  }
+
+  // Header auth state:
+  // Signed in  → hide Sign In link, "My Profile" btn (btn-s)
+  // Not signed in → show Sign In link, "Sign Up Free" btn (btn-p)
+  function renderHeaderAuth() {
+    // Auth buttons hidden for now — no-op
+  }
+
+  // Switch which view is visible inside the modal + update title
+  function showModalView(id) {
+    const titles = {
+      welcomeBack: 'MY PROFILE',
+      signinForm:  'WELCOME BACK',
+      signupForm:  'CREATE YOUR ACCOUNT',
+    };
+    ['welcomeBack','signinForm','signupForm'].forEach(v => {
+      const el = document.getElementById(v);
+      if (el) el.style.display = v === id ? 'block' : 'none';
+    });
+    const titleEl = document.getElementById('signupTitle');
+    if (titleEl) titleEl.textContent = titles[id] || '';
+  }
+
+  function handleSignup() {
+    const email   = document.getElementById('sigEmail').value.trim();
+    const pass    = document.getElementById('sigPass').value;
+    const confirm = document.getElementById('sigPassConfirm').value;
+    const errBox  = document.getElementById('signupError');
+    const errTxt  = document.getElementById('signupErrorText');
+    errBox.style.display = 'none';
+
+    // Validate email
+    if (!email || !email.includes('@')) {
+      errTxt.textContent = 'Please enter a valid email address.';
+      errBox.style.display = 'block';
+      document.getElementById('sigEmail').focus();
+      return;
+    }
+
+    // Validate password length
+    if (pass && pass.length < 6) {
+      errTxt.textContent = 'Password must be at least 6 characters.';
+      errBox.style.display = 'block';
+      document.getElementById('sigPass').focus();
+      return;
+    }
+
+    // Validate passwords match
+    if (pass !== confirm) {
+      errTxt.textContent = 'Passwords do not match. Please try again.';
+      errBox.style.display = 'block';
+      document.getElementById('sigPassConfirm').style.borderColor = '#dc2626';
+      document.getElementById('sigPassConfirm').style.boxShadow   = '0 0 0 3px rgba(220,38,38,.12)';
+      document.getElementById('sigPassConfirm').focus();
+      return;
+    }
+
+    // Save account + start session
+    localStorage.setItem(USER_KEY, JSON.stringify({
+      email,
+      password: pass || null,
+      joined: new Date().toISOString(),
+    }));
+    localStorage.setItem(SESSION_KEY, 'active');
+
+    document.getElementById('signupSuccess').style.display = 'block';
+    document.getElementById('sigEmail').disabled       = true;
+    document.getElementById('sigPass').disabled        = true;
+    document.getElementById('sigPassConfirm').disabled = true;
+    renderHeaderAuth();
+    setTimeout(() => closeSignupModal(), 1800);
+  }
+
+  function handleSignIn() {
+    const email  = document.getElementById('siEmail').value.trim();
+    const pass   = document.getElementById('siPass').value;
+    const errBox = document.getElementById('signinError');
+    const errTxt = document.getElementById('signinErrorText');
+    errBox.style.display = 'none';
+
+    const u = getUser();
+    if (!u || u.email.toLowerCase() !== email.toLowerCase()) {
+      errTxt.textContent = 'No account found with that email address.';
+      errBox.style.display = 'block';
+      document.getElementById('siEmail').focus();
+      return;
+    }
+    if (u.password && u.password !== pass) {
+      errTxt.textContent = 'Incorrect password. Please try again.';
+      errBox.style.display = 'block';
+      document.getElementById('siPass').focus();
+      return;
+    }
+
+    localStorage.setItem(SESSION_KEY, 'active');
+    renderHeaderAuth();
+    setTimeout(() => closeSignupModal(), 380);
+  }
+
+  // Sign out clears only the session — account (su_user) is kept
+  function signOut() {
+    if (confirm('Sign out? Your account and local data will be preserved.')) {
+      localStorage.removeItem(SESSION_KEY);
+      renderHeaderAuth();
+      closeSignupModal();
+    }
+  }
+
+  // ─────────────────────────────────────────────────
+  // DATE HELPERS
+  // ─────────────────────────────────────────────────
+  function todayISO() { return new Date().toISOString().split('T')[0]; }
+
+  function fmtDate(iso) {
+    if (!iso) return '';
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  }
+
+  // ISO-8601 week key "YYYY-Www"
+  function weekKey() {
+    const d = new Date();
+    const dow = d.getDay() || 7;
+    const thu = new Date(d); thu.setDate(d.getDate() + 4 - dow);
+    const yr  = new Date(thu.getFullYear(), 0, 1);
+    const wk  = Math.ceil(((thu - yr) / 86400000 + 1) / 7);
+    return `${thu.getFullYear()}-W${String(wk).padStart(2,'0')}`;
+  }
+
+  // ─────────────────────────────────────────────────
+  // CALCULATIONS
+  // ─────────────────────────────────────────────────
+  function todayCount() { return S.log[todayISO()] || 0; }
+
+  function calcStreak() {
+    const d = new Date();
+    if (!S.log[d.toISOString().split('T')[0]]) d.setDate(d.getDate() - 1);
+    let n = 0;
+    while (true) {
+      const k = d.toISOString().split('T')[0];
+      if ((S.log[k] || 0) >= 1) { n++; d.setDate(d.getDate() - 1); }
+      else break;
+    }
+    return n;
+  }
+
+  function calcTotal()   { return Object.values(S.log).reduce((a,v) => a+v, 0); }
+
+  function calcThisWeek() {
+    const d = new Date(); let t = 0;
+    for (let i = 0; i < 7; i++) {
+      t += S.log[d.toISOString().split('T')[0]] || 0;
+      d.setDate(d.getDate() - 1);
+    }
+    return t;
+  }
+
+  function last14() {
+    const days = [];
+    const base = new Date();
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(base); d.setDate(base.getDate() - i);
+      const iso = d.toISOString().split('T')[0];
+      const lbl = d.toLocaleDateString('en-US', { month:'numeric', day:'numeric' });
+      days.push({ iso, lbl, count: S.log[iso] || 0 });
+    }
+    return days;
+  }
+
+  // ─────────────────────────────────────────────────
+  // LEVEL & WEEK LOGIC
+  // ─────────────────────────────────────────────────
+  const LEVELS = {
+    beginner:    { name:'Beginner',    color:'#dc2626', bg:'#fef2f2', border:'rgba(220,38,38,.3)'  },
+    novice:      { name:'Novice',      color:'#d97706', bg:'#fffbeb', border:'rgba(217,119,6,.3)'  },
+    intermediate:{ name:'Intermediate',color:'#0284c7', bg:'#f0f9ff', border:'rgba(2,132,199,.3)'  },
+    advanced:    { name:'Advanced',    color:'#16a34a', bg:'#f0fdf4', border:'rgba(22,163,74,.3)'  },
+  };
+
+  function getLevel(n) {
+    if (n < 10)  return LEVELS.beginner;
+    if (n < 25)  return LEVELS.novice;
+    if (n <= 40) return LEVELS.intermediate;
+    return LEVELS.advanced;
+  }
+
+  const WEEK_DESC = {
+    1: 'Form focus & easy variations — build a solid foundation before adding volume.',
+    2: 'Building volume — steady sets with controlled tempo and growing reps.',
+    3: 'Progressive overload — increasing reps, sets, and density.',
+    4: 'High volume — advanced sets, shorter rest periods.',
+    5: 'Peak volume — intense sessions pushing your limits.',
+    6: 'Final push — maximum effort before your assessment week.',
+  };
+
+  // ── Week set data keyed by week → tracks → days ──────────────
+  // tracks[i].range = [min, max] inclusive for user's pushUpMax
+  // days[d].sets[s] = [repsTrack0, repsTrack1, repsTrack2]
+  const WEEK_DATA = {
+    1: {
+      tracks: [
+        { range: [0,  5],  label: '< 5 reps'   },
+        { range: [6,  10], label: '6–10 reps'  },
+        { range: [11, 20], label: '11–20 reps' },
+      ],
+      days: [
+        { sets: [[2,6,10],[3,6,12],[2,4,7],[2,4,7],['3+','5+','9+']] },
+        { sets: [[3,6,10],[4,8,12],[2,6,8],[3,6,8],['4+','7+','12+']] },
+        { sets: [[4,8,11],[5,10,15],[4,7,9],[4,7,9],['5+','10+','13+']] },
+      ],
+    },
+    2: {
+      tracks: [
+        { range: [0,  17], label: '0–17 reps'  },
+        { range: [18, 30], label: '18–30 reps' },
+        { range: [31, 999],label: '31+ reps'   },
+      ],
+      days: [
+        { sets: [[8,12,18],[10,14,22],[8,12,18],[6,10,15],['10+','15+','25+']] },
+        { sets: [[10,14,20],[12,16,24],[10,14,20],[8,12,18],['12+','18+','28+']] },
+        { sets: [[8,14,22],[10,18,26],[8,14,22],[6,12,20],['12+','20+','30+']] },
+      ],
+    },
+    3: {
+      tracks: [
+        { range: [0,  17], label: '0–17 reps'  },
+        { range: [18, 30], label: '18–30 reps' },
+        { range: [31, 999],label: '31+ reps'   },
+      ],
+      days: [
+        { sets: [[10,15,24],[12,18,28],[10,15,24],[8,14,22],['15+','22+','35+']] },
+        { sets: [[12,18,26],[14,20,30],[12,18,26],[10,15,24],['18+','25+','40+']] },
+        { sets: [[10,18,28],[12,22,32],[10,18,28],[8,16,26],['20+','30+','45+']] },
+      ],
+    },
+    4: {
+      tracks: [
+        { range: [0,  17], label: '0–17 reps'  },
+        { range: [18, 30], label: '18–30 reps' },
+        { range: [31, 999],label: '31+ reps'   },
+      ],
+      days: [
+        { sets: [[12,18,28],[14,22,32],[12,18,28],[10,16,26],['20+','30+','45+']] },
+        { sets: [[14,20,30],[16,24,36],[14,20,30],[12,18,28],['22+','35+','50+']] },
+        { sets: [[12,20,32],[16,26,38],[14,22,34],[12,20,30],['25+','40+','55+']] },
+      ],
+    },
+    5: {
+      tracks: [
+        { range: [0,  17], label: '0–17 reps'  },
+        { range: [18, 30], label: '18–30 reps' },
+        { range: [31, 999],label: '31+ reps'   },
+      ],
+      days: [
+        { sets: [[14,22,34],[18,26,38],[14,22,34],[12,20,30],['28+','42+','60+']] },
+        { sets: [[16,24,36],[20,28,42],[16,24,36],[14,22,32],['30+','45+','65+']] },
+        { sets: [[15,26,40],[20,32,48],[16,26,40],[14,24,36],['35+','50+','70+']] },
+      ],
+    },
+    6: {
+      tracks: [
+        { range: [0,  17], label: '0–17 reps'  },
+        { range: [18, 30], label: '18–30 reps' },
+        { range: [31, 999],label: '31+ reps'   },
+      ],
+      days: [
+        { sets: [[16,26,40],[22,32,48],[18,28,42],[16,26,38],['40+','55+','75+']] },
+        { sets: [[18,28,44],[24,36,52],[20,30,46],[18,28,42],['45+','60+','80+']] },
+        { sets: [[20,30,46],[26,38,56],[22,32,48],[18,30,44],['50+','65+','85+']] },
+      ],
+    },
+  };
+
+  function getTrackIndex(weekNum, max) {
+    const wd = WEEK_DATA[weekNum];
+    if (!wd) return null;
+    for (let i = 0; i < wd.tracks.length; i++) {
+      const [lo, hi] = wd.tracks[i].range;
+      if (max >= lo && max <= hi) return i;
+    }
+    return wd.tracks.length - 1; // above all defined ranges → highest track
+  }
+
+  const LEVEL_MSG = {
+    'Beginner':     "Great starting point — focus on form now for big gains ahead.",
+    'Novice':       "Solid foundation! Consistent training will push your numbers up fast.",
+    'Intermediate': "Strong base — you're well on your way to advanced.",
+    'Advanced':     "Impressive! Jump into higher volume and keep pushing your limits.",
+  };
+
+  function getMotivation(pct, rem, goal) {
+    if (pct >= 100) return '🏆 Goal crushed! Amazing work today.';
+    if (pct >= 75)  return `Almost there — ${rem} more to hit your goal!`;
+    if (pct >= 50)  return `Halfway! Keep the momentum — ${rem} to go.`;
+    if (pct >= 20)  return `Good start — ${rem} more to reach ${goal}.`;
+    if (pct > 0)    return `Let's build that momentum — ${rem} reps to go!`;
+    return 'Set your goal and start adding push-ups!';
+  }
+
+  // ─────────────────────────────────────────────────
+  // RENDER
+  // ─────────────────────────────────────────────────
+  function render() {
+    document.getElementById('hdrDate').textContent =
+      new Date().toLocaleDateString('en-US',
+        { weekday:'long', month:'long', day:'numeric' }).toUpperCase();
+
+    renderChallenge();
+    renderPrevTest();
+    renderFirstBanner();
+    renderHeaderAuth();
+    renderChallengeProgram();
+  }
+
+  function renderChallenge() {
+    const sec = document.getElementById('challengeSec');
+    if (!S.challengeStartWeek) { sec.style.display = 'none'; return; }
+
+    sec.style.display = 'block';
+    document.getElementById('cwLabel').textContent = `WEEK ${S.challengeStartWeek}`;
+    document.getElementById('cwDesc').textContent  = WEEK_DESC[S.challengeStartWeek] || '';
+
+    const wk = weekKey();
+    ['Mon','Wed','Fri'].forEach(day => {
+      const cb = document.getElementById('d' + day);
+      if (cb) cb.checked = !!(S.completions[`${wk}-${day}`]);
+    });
+
+    const done = ['Mon','Wed','Fri']
+      .filter(d => S.completions[`${wk}-${d}`]).length;
+    const prog = document.getElementById('cwProg');
+    prog.textContent = `${done}/3 sessions completed this week`;
+    prog.style.color = done === 3 ? 'var(--brand)' : 'var(--muted)';
+  }
+
+  function renderPrevTest() {
+    const box = document.getElementById('prevTest');
+    const noTest = document.getElementById('noTestPrompt');
+    if (!S.pushUpMax) {
+      box.style.display = 'none';
+      noTest.style.display = 'block';
+      return;
+    }
+    box.style.display = 'block';
+    noTest.style.display = 'none';
+    document.getElementById('prevMax').textContent  = S.pushUpMax;
+    document.getElementById('prevDate').textContent = fmtDate(S.testDate);
+
+    const lvl = getLevel(S.pushUpMax);
+    document.getElementById('prevBadge').innerHTML =
+      `<span class="badge" style="background:${lvl.bg};border:1px solid ${lvl.border};color:${lvl.color};font-size:11px;padding:3px 10px">${lvl.name}</span>`;
+  }
+
+  function renderFirstBanner() {
+    const banner = document.getElementById('firstBanner');
+    const dismissed = localStorage.getItem(BANNER_KEY);
+    if (!S.pushUpMax && !dismissed) {
+      banner.style.display = 'block';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+
+  function dismissBanner() {
+    localStorage.setItem(BANNER_KEY, '1');
+    document.getElementById('firstBanner').style.display = 'none';
+  }
+
+  // ─────────────────────────────────────────────────
+  // ACTIONS
+  // ─────────────────────────────────────────────────
+  function saveDayCheck(day) {
+    const cb  = document.getElementById('d' + day);
+    const key = `${weekKey()}-${day}`;
+    if (cb.checked) S.completions[key] = true;
+    else delete S.completions[key];
+    save(S); renderChallenge();
+  }
+
+  function resetChallenge() {
+    if (confirm('End this challenge? Weekly completion data will be cleared.')) {
+      S.challengeStartWeek = null;
+      S.completions = {};
+      save(S); render();
+    }
+  }
+
+  // ─────────────────────────────────────────────────
+  // TEST MODAL
+  // ─────────────────────────────────────────────────
+  function openModal() {
+    document.getElementById('modal').classList.add('open');
+    document.getElementById('mForm').style.display = 'block';
+    const res = document.getElementById('mResult');
+    res.style.display = 'none'; res.classList.remove('vis');
+    document.getElementById('maxIn').value = '';
+    setTimeout(() => document.getElementById('maxIn').focus(), 280);
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+  }
+
+  function handleBgClick(e) {
+    if (e.target === document.getElementById('modal')) closeModal();
+  }
+
+  function submitTest() {
+    const n = parseInt(document.getElementById('maxIn').value, 10);
+    if (isNaN(n) || n < 0) { document.getElementById('maxIn').focus(); return; }
+
+    S.pushUpMax = n;
+    S.testDate  = todayISO();
+    save(S);
+
+    const lvl  = getLevel(n);
+    const week = calcRecommendedWeek(n);
+
+    document.getElementById('mForm').style.display = 'none';
+    const res = document.getElementById('mResult');
+    res.style.display = 'block';
+
+    const badge = document.getElementById('rBadge');
+    badge.textContent         = lvl.name;
+    badge.style.background   = lvl.bg;
+    badge.style.border       = `1px solid ${lvl.border}`;
+    badge.style.color        = lvl.color;
+
+    document.getElementById('rMax').textContent      = n;
+    document.getElementById('rText').textContent     = LEVEL_MSG[lvl.name];
+    document.getElementById('rWeekNum').textContent  = week;
+    document.getElementById('rWeekLbl').textContent  = `WEEK ${week}`;
+    document.getElementById('rWeekDesc').textContent = WEEK_DESC[week];
+
+    const startBtn = document.getElementById('startBtn');
+    startBtn.textContent = `Start Challenge from Week ${week}`;
+    startBtn.onclick = () => startChallenge(week);
+
+    setTimeout(() => res.classList.add('vis'), 40);
+    renderPrevTest();
+    // Hide the first-visit banner since user has now tested
+    dismissBanner();
+  }
+
+  function startChallenge(week) {
+    S.challengeStartWeek = week;
+    S.completions = {};
+    selectedWeek = week; // sync challenge program section
+    save(S); closeModal(); render();
+    // Scroll to the challenge program section
+    setTimeout(() => {
+      document.getElementById('challengeProgram')
+        .scrollIntoView({ behavior:'smooth', block:'start' });
+    }, 350);
+  }
+
+  // ─────────────────────────────────────────────────
+  // SIGN-UP MODAL
+  // ─────────────────────────────────────────────────
+  function openSignupModal() {
+    document.getElementById('signupModal').classList.add('open');
+    const u       = getUser();
+    const session = localStorage.getItem(SESSION_KEY);
+
+    if (u && session === 'active') {
+      // Signed in → show profile
+      showModalView('welcomeBack');
+      document.getElementById('welcomeEmail').textContent = `Signed in as ${u.email}`;
+
+    } else if (u) {
+      // Has account but not signed in → show sign-in form
+      showModalView('signinForm');
+      document.getElementById('siEmail').value = u.email; // pre-fill email
+      document.getElementById('siPass').value  = '';
+      document.getElementById('signinError').style.display = 'none';
+      setTimeout(() => document.getElementById('siPass').focus(), 280);
+
+    } else {
+      // No account → show sign-up form
+      showModalView('signupForm');
+      document.getElementById('signupSuccess').style.display = 'none';
+      document.getElementById('signupError').style.display   = 'none';
+      document.getElementById('sigEmail').disabled       = false;
+      document.getElementById('sigPass').disabled        = false;
+      document.getElementById('sigPassConfirm').disabled = false;
+      document.getElementById('sigEmail').value       = '';
+      document.getElementById('sigPass').value        = '';
+      document.getElementById('sigPassConfirm').value = '';
+      document.getElementById('sigPassConfirm').style.borderColor = '';
+      document.getElementById('sigPassConfirm').style.boxShadow   = '';
+      setTimeout(() => document.getElementById('sigEmail').focus(), 280);
+    }
+  }
+
+  function closeSignupModal() {
+    document.getElementById('signupModal').classList.remove('open');
+  }
+
+  // Opens the modal straight to the Sign In form
+  function openSigninModal() {
+    document.getElementById('signupModal').classList.add('open');
+    const u = getUser();
+    if (u && localStorage.getItem(SESSION_KEY) === 'active') {
+      showModalView('welcomeBack');
+      document.getElementById('welcomeEmail').textContent = `Signed in as ${u.email}`;
+      return;
+    }
+    showModalView('signinForm');
+    document.getElementById('siEmail').value = u ? u.email : '';
+    document.getElementById('siPass').value  = '';
+    document.getElementById('signinError').style.display = 'none';
+    setTimeout(() => document.getElementById(u ? 'siPass' : 'siEmail').focus(), 280);
+  }
+
+  function handleSignupBgClick(e) {
+    if (e.target === document.getElementById('signupModal')) closeSignupModal();
+  }
+
+  // ─────────────────────────────────────────────────
+  // KEYBOARD
+  // ─────────────────────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeModal(); closeSignupModal(); }
+  });
+
+  // ─────────────────────────────────────────────────
+  // CHALLENGE PROGRAM
+  // ─────────────────────────────────────────────────
+
+  // Which week pill is currently active (null = overview/default)
+  let selectedWeek = null;
+
+  // Map max push-up score → recommended starting week (1-7)
+  function calcRecommendedWeek(max) {
+    if (max < 10) return 1;
+    if (max < 15) return 2;
+    if (max < 20) return 3;
+    if (max < 25) return 4;
+    if (max < 30) return 5;
+    return 6; // 30+ reps → Week 6 (Final Test is Week 7, not a training week)
+  }
+
+  // Click a week pill (null = back to overview)
+  function selectWeek(n) {
+    selectedWeek = n;
+    renderChallengeProgram();
+    if (n !== null) {
+      // Smooth scroll to the section so detail is visible
+      document.getElementById('challengeProgram')
+        .scrollIntoView({ behavior:'smooth', block:'start' });
+    }
+  }
+
+  // Update pill highlight + recommended indicator dot
+  function renderWeekSelector() {
+    const recommended = S.pushUpMax !== null
+      ? calcRecommendedWeek(S.pushUpMax) : null;
+
+    for (let i = 1; i <= 7; i++) {
+      const btn = document.getElementById('weekBtn' + i);
+      if (!btn) continue;
+
+      // Active pill
+      btn.classList.toggle('active', i === selectedWeek);
+
+      // Remove any stale rec-dot from a previous render
+      const old = btn.querySelector('.rec-dot');
+      if (old) old.remove();
+
+      // Add a "REC" badge for the recommended week (if not already active, never on Final Test)
+      if (i === recommended && i !== selectedWeek && i !== 7) {
+        const dot = document.createElement('span');
+        dot.className = 'rec-dot';
+        dot.title = 'Recommended for your level';
+        dot.style.cssText =
+          'display:inline-block;font-family:\'Inter\',sans-serif;font-size:9px;' +
+          'font-weight:700;letter-spacing:.06em;background:var(--brand);color:#fff;' +
+          'border-radius:999px;padding:1px 5px;margin-left:6px;vertical-align:middle;' +
+          'opacity:.9;text-transform:uppercase;';
+        dot.textContent = 'REC';
+        btn.appendChild(dot);
+      }
+    }
+  }
+
+  // Swap the content area between overview and week detail
+  function renderWeekContent() {
+    const defaultEl = document.getElementById('weekDefault');
+    const detailEl  = document.getElementById('weekDetail');
+    if (!defaultEl || !detailEl) return;
+
+    if (selectedWeek === null) {
+      defaultEl.style.display = 'block';
+      detailEl.style.display  = 'none';
+
+      // Personalise the default-state copy based on test result
+      const titleEl = document.getElementById('cpDefaultTitle');
+      const descEl  = document.getElementById('cpDefaultDesc');
+      if (S.pushUpMax !== null) {
+        const rec = calcRecommendedWeek(S.pushUpMax);
+        if (titleEl) titleEl.textContent =
+          `Your recommended start: Week ${rec}`;
+        if (descEl) descEl.textContent =
+          `Based on your max of ${S.pushUpMax} reps. ` +
+          `Select Week ${rec} above to begin, or browse any week.`;
+      } else {
+        if (titleEl) titleEl.textContent =
+          'Select a week above to preview the program';
+        if (descEl) descEl.textContent =
+          'Take the strength test to get your recommended starting week, ' +
+          'or browse any week below.';
+      }
+      return;
+    }
+
+    // Week detail view
+    defaultEl.style.display = 'none';
+    detailEl.style.display  = 'block';
+
+    const normalEl = document.getElementById('weekNormal');
+    const finalEl  = document.getElementById('finalTestContent');
+
+    if (selectedWeek === 7) {
+      // Final Test panel — no day cards
+      if (normalEl) normalEl.style.display = 'none';
+      if (finalEl)  finalEl.style.display  = 'block';
+      // Personalise description if we have an initial max
+      const descEl = document.getElementById('finalTestDesc');
+      if (descEl && S.pushUpMax !== null) {
+        descEl.textContent =
+          `You started Week 1 with a max of ${S.pushUpMax} reps. ` +
+          `After 6 weeks of training, take the test again to measure your improvement.`;
+      }
+      return;
+    }
+
+    // Normal week (1–6)
+    if (normalEl) normalEl.style.display = 'block';
+    if (finalEl)  finalEl.style.display  = 'none';
+
+    const titleEl = document.getElementById('wDetailTitle');
+    const introEl = document.getElementById('wDetailIntro');
+    if (titleEl) titleEl.textContent = `WEEK ${selectedWeek}`;
+    if (introEl) introEl.textContent =
+      `Week ${selectedWeek} – Build strength progressively. ` +
+      `Perform on 3 non-consecutive days.`;
+
+    renderDayCards(selectedWeek);
+  }
+
+  function renderDayCards(weekNum) {
+    const wd = WEEK_DATA[weekNum];
+    const max = S.pushUpMax;
+    const trackIdx = (max !== null && wd) ? getTrackIndex(weekNum, max) : null;
+    const tracks = wd ? wd.tracks : [
+      { label: '< 5' }, { label: '6–10' }, { label: '11–20' },
+    ];
+
+    // Track badge — tell user which column is theirs
+    const badge = document.getElementById('wTrackBadge');
+    if (badge) {
+      if (trackIdx !== null && wd) {
+        badge.textContent = `↑ Your level: ${wd.tracks[trackIdx].label} reps (highlighted)`;
+        badge.style.display = 'block';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    [1, 2, 3].forEach(di => {
+      const table = document.getElementById(`setTable${di}`);
+      if (!table) return;
+      table.innerHTML = '';
+
+      // ── Header row ──────────────────────────────────
+      const thead = document.createElement('thead');
+      let thHtml = '<tr><th>Pushups</th>';
+      tracks.forEach((t, ti) => {
+        const cls = ti === trackIdx ? ' class="track-active"' : '';
+        thHtml += `<th${cls}>${t.label}</th>`;
+      });
+      thHtml += '</tr>';
+      thead.innerHTML = thHtml;
+      table.appendChild(thead);
+
+      // ── Data rows ───────────────────────────────────
+      const tbody   = document.createElement('tbody');
+      tbody.id      = `setBody${di}`;
+      const dayData = wd ? wd.days[di - 1] : null;
+
+      if (!dayData) {
+        for (let s = 1; s <= 5; s++) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td>Set ${s}</td>${tracks.map(() => '<td>—</td>').join('')}`;
+          tbody.appendChild(tr);
+        }
+      } else {
+        dayData.sets.forEach((repsByTrack, si) => {
+          const tr = document.createElement('tr');
+          let cells = `<td>Set ${si + 1}</td>`;
+          repsByTrack.forEach((reps, ti) => {
+            const cls = ti === trackIdx ? ' class="track-active"' : '';
+            const display = si === 4 ? 'Max pushups' : reps;
+            cells += `<td${cls}>${display}</td>`;
+          });
+          tr.innerHTML = cells;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Max Set row
+      const maxTr = document.createElement('tr');
+      maxTr.className = 'max-row';
+      maxTr.innerHTML =
+        `<td>Max Set</td><td colspan="${tracks.length}">Max effort →</td>`;
+      tbody.appendChild(maxTr);
+
+      table.appendChild(tbody);
+    });
+  }
+
+  // Master render — called from main render() and after test
+  function renderChallengeProgram() {
+    renderWeekSelector();
+    renderWeekContent();
+  }
+
+  // ─────────────────────────────────────────────────
+  // BOOT
+  // ─────────────────────────────────────────────────
+  // Auto-select the user's saved challenge week (if any)
+  // Also accepts ?week=N and ?max=N in URL for preview/testing
+  const _params = new URLSearchParams(window.location.search);
+  const _wParam = parseInt(_params.get('week'));
+  const _mParam = parseInt(_params.get('max'));
+  if (!isNaN(_mParam) && _mParam > 0) S.pushUpMax = _mParam; // preview test result
+  if (_wParam >= 1 && _wParam <= 7) selectedWeek = _wParam;
+  else if (S.challengeStartWeek) selectedWeek = S.challengeStartWeek;
+  render();
+  renderChallengeProgram();
+  </script>
+</body>
+</html>
