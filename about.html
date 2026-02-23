@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About – StrongerPushups.com</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -201,8 +202,16 @@
     <nav style="display:flex;align-items:center;gap:24px">
       <a href="index.html"  class="nav-link">Home</a>
       <a href="about.html"  class="nav-link active">About</a>
-      <button id="headerSigninLink" style="display:none"></button>
-      <button id="headerSignupBtn"  style="display:none"></button>
+      <button id="headerSigninLink" onclick="openSigninModal()"
+        class="nav-link" style="background:none;border:none;cursor:pointer;
+          font-family:'Oswald',sans-serif;font-weight:500;font-size:14px;
+          letter-spacing:.04em;padding:4px 2px">
+        Sign In
+      </button>
+      <button id="headerSignupBtn" onclick="openSignupModal()"
+        class="btn-p" style="padding:7px 16px;font-size:13px">
+        Sign Up Free
+      </button>
     </nav>
   </header>
 
@@ -557,9 +566,6 @@
       <div id="signupForm" style="display:none">
         <p style="font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px">
           Save your account details so your streak and progress are linked to your email.
-          <em style="font-size:11px;display:block;margin-top:4px;color:var(--subtle)">
-            Stored locally — no server needed.
-          </em>
         </p>
         <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px">
           <div>
@@ -584,8 +590,7 @@
         </div>
         <div id="signupSuccess" style="display:none;background:#f0fdf4;border:1px solid #86efac;
           border-radius:var(--r-sm);padding:14px;margin-bottom:14px;text-align:center">
-          <p style="font-size:14px;color:#166534;font-weight:600">✓ Account created!</p>
-          <p style="font-size:12px;color:#15803d;margin-top:4px">Data saved persistently on this device.</p>
+          <p style="font-size:14px;color:#166534;font-weight:600">✓ Account created! You're now signed in.</p>
         </div>
         <div id="signupError" style="display:none;background:#fef2f2;border:1px solid #fca5a5;
           border-radius:var(--r-sm);padding:12px;margin-bottom:14px">
@@ -595,28 +600,45 @@
           style="width:100%;padding:13px;font-size:16px">
           Create Account
         </button>
-        <p style="font-size:10px;color:var(--subtle);margin-top:12px;text-align:center;line-height:1.5">
-          No data is sent to any server. Everything stays on your device.
-        </p>
       </div>
     </div>
   </div>
 
 
   <script>
-  // ─── Auth (localStorage-only, 3-state) ──────────────────────
-  const USER_KEY    = 'su_user';    // { email, password, joined }
-  const SESSION_KEY = 'su_session'; // 'active' | null
+  // ── SUPABASE CONFIG ── Replace with your project values ──────
+  // 1. Go to https://supabase.com → New project
+  // 2. Settings → API → copy Project URL + anon public key
+  // 3. Auth → Providers → Email → disable "Confirm email"
+  const SUPABASE_URL  = 'https://mxhrnyxfsweqtljprqli.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im14aHJueXhmc3dlcXRsanBycWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MzE4OTIsImV4cCI6MjA4NzQwNzg5Mn0.POItpq92sfACaoVZ0vFZM7DWW7naa13YIfkUVcVpvj8';
+  // ─────────────────────────────────────────────────────────────
+  const _supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+  let _supaUser = null;
 
-  function getUser() {
-    try { return JSON.parse(localStorage.getItem(USER_KEY)); }
-    catch { return null; }
-  }
+  _supa.auth.onAuthStateChange((_event, session) => {
+    _supaUser = session?.user ?? null;
+    if (typeof renderHeaderAuth === 'function') renderHeaderAuth();
+  });
+  _supa.auth.getSession().then(({ data }) => {
+    _supaUser = data.session?.user ?? null;
+    if (typeof renderHeaderAuth === 'function') renderHeaderAuth();
+  });
 
-  // Signed in → hide Sign In link, "My Profile" btn
-  // Not signed in → show Sign In link, "Sign Up Free" btn
+  function getUser() { return _supaUser; }
+
   function renderHeaderAuth() {
-    // Auth buttons hidden for now — no-op
+    const btn     = document.getElementById('headerSignupBtn');
+    const sinLink = document.getElementById('headerSigninLink');
+    if (!btn) return;
+    const sty = 'padding:7px 16px;font-size:13px';
+    if (_supaUser) {
+      if (sinLink) sinLink.style.display = 'none';
+      btn.textContent = 'My Profile'; btn.className = 'btn-s'; btn.style.cssText = sty;
+    } else {
+      if (sinLink) sinLink.style.display = '';
+      btn.textContent = 'Sign Up Free'; btn.className = 'btn-p'; btn.style.cssText = sty;
+    }
   }
 
   function showModalView(id) {
@@ -635,26 +657,16 @@
 
   function openSignupModal() {
     document.getElementById('signupModal').classList.add('open');
-    const u       = getUser();
-    const session = localStorage.getItem(SESSION_KEY);
-
-    if (u && session === 'active') {
+    if (_supaUser) {
       showModalView('welcomeBack');
-      document.getElementById('welcomeEmail').textContent = `Signed in as ${u.email}`;
-    } else if (u) {
-      showModalView('signinForm');
-      document.getElementById('siEmail').value = u.email;
-      document.getElementById('siPass').value  = '';
-      document.getElementById('signinError').style.display = 'none';
-      setTimeout(() => document.getElementById('siPass').focus(), 280);
+      document.getElementById('welcomeEmail').textContent = `Signed in as ${_supaUser.email}`;
     } else {
       showModalView('signupForm');
       document.getElementById('signupSuccess').style.display = 'none';
       document.getElementById('signupError').style.display   = 'none';
-      document.getElementById('sigEmail').disabled = false;
-      document.getElementById('sigPass').disabled  = false;
       document.getElementById('sigEmail').value = '';
       document.getElementById('sigPass').value  = '';
+      document.getElementById('sigPassConfirm').value = '';
       setTimeout(() => document.getElementById('sigEmail').focus(), 280);
     }
   }
@@ -665,24 +677,23 @@
 
   function openSigninModal() {
     document.getElementById('signupModal').classList.add('open');
-    const u = getUser();
-    if (u && localStorage.getItem(SESSION_KEY) === 'active') {
+    if (_supaUser) {
       showModalView('welcomeBack');
-      document.getElementById('welcomeEmail').textContent = `Signed in as ${u.email}`;
+      document.getElementById('welcomeEmail').textContent = `Signed in as ${_supaUser.email}`;
       return;
     }
     showModalView('signinForm');
-    document.getElementById('siEmail').value = u ? u.email : '';
+    document.getElementById('siEmail').value = '';
     document.getElementById('siPass').value  = '';
     document.getElementById('signinError').style.display = 'none';
-    setTimeout(() => document.getElementById(u ? 'siPass' : 'siEmail').focus(), 280);
+    setTimeout(() => document.getElementById('siEmail').focus(), 280);
   }
 
   function handleSignupBgClick(e) {
     if (e.target === document.getElementById('signupModal')) closeSignupModal();
   }
 
-  function handleSignup() {
+  async function handleSignup() {
     const email   = document.getElementById('sigEmail').value.trim();
     const pass    = document.getElementById('sigPass').value;
     const confirm = document.getElementById('sigPassConfirm').value;
@@ -693,67 +704,61 @@
     if (!email || !email.includes('@')) {
       errTxt.textContent = 'Please enter a valid email address.';
       errBox.style.display = 'block';
-      document.getElementById('sigEmail').focus();
-      return;
+      document.getElementById('sigEmail').focus(); return;
     }
-    if (pass && pass.length < 6) {
+    if (pass.length < 6) {
       errTxt.textContent = 'Password must be at least 6 characters.';
       errBox.style.display = 'block';
-      document.getElementById('sigPass').focus();
-      return;
+      document.getElementById('sigPass').focus(); return;
     }
     if (pass !== confirm) {
-      errTxt.textContent = 'Passwords do not match. Please try again.';
+      errTxt.textContent = 'Passwords do not match.';
       errBox.style.display = 'block';
-      document.getElementById('sigPassConfirm').style.borderColor = '#dc2626';
-      document.getElementById('sigPassConfirm').style.boxShadow   = '0 0 0 3px rgba(220,38,38,.12)';
-      document.getElementById('sigPassConfirm').focus();
-      return;
+      document.getElementById('sigPassConfirm').focus(); return;
     }
 
-    localStorage.setItem(USER_KEY, JSON.stringify({
-      email, password: pass || null, joined: new Date().toISOString(),
-    }));
-    localStorage.setItem(SESSION_KEY, 'active');
+    const btn = document.querySelector('#signupForm .btn-p');
+    btn.disabled = true; btn.textContent = 'Creating account…';
+
+    const { error } = await _supa.auth.signUp({ email, password: pass });
+
+    btn.disabled = false; btn.textContent = 'Create Account';
+
+    if (error) {
+      errTxt.textContent = error.message;
+      errBox.style.display = 'block'; return;
+    }
     document.getElementById('signupSuccess').style.display = 'block';
-    document.getElementById('sigEmail').disabled       = true;
-    document.getElementById('sigPass').disabled        = true;
-    document.getElementById('sigPassConfirm').disabled = true;
-    renderHeaderAuth();
     setTimeout(() => closeSignupModal(), 1800);
   }
 
-  function handleSignIn() {
+  async function handleSignIn() {
     const email  = document.getElementById('siEmail').value.trim();
     const pass   = document.getElementById('siPass').value;
     const errBox = document.getElementById('signinError');
     const errTxt = document.getElementById('signinErrorText');
     errBox.style.display = 'none';
 
-    const u = getUser();
-    if (!u || u.email.toLowerCase() !== email.toLowerCase()) {
-      errTxt.textContent = 'No account found with that email address.';
-      errBox.style.display = 'block';
-      document.getElementById('siEmail').focus();
-      return;
+    const btn = document.querySelector('#signinForm .btn-p');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+
+    const { error } = await _supa.auth.signInWithPassword({ email, password: pass });
+
+    btn.disabled = false; btn.textContent = 'Sign In';
+
+    if (error) {
+      errTxt.textContent = error.message;
+      errBox.style.display = 'block'; return;
     }
-    if (u.password && u.password !== pass) {
-      errTxt.textContent = 'Incorrect password. Please try again.';
-      errBox.style.display = 'block';
-      document.getElementById('siPass').focus();
-      return;
-    }
-    localStorage.setItem(SESSION_KEY, 'active');
-    renderHeaderAuth();
+    // onAuthStateChange fires → renderHeaderAuth() + _supaUser updated automatically
     setTimeout(() => closeSignupModal(), 380);
   }
 
-  // Sign out clears only the session — account (su_user) is kept
-  function signOut() {
-    if (confirm('Sign out? Your account and local data will be preserved.')) {
-      localStorage.removeItem(SESSION_KEY);
-      renderHeaderAuth();
+  async function signOut() {
+    if (confirm('Sign out?')) {
+      await _supa.auth.signOut();
       closeSignupModal();
+      // onAuthStateChange fires → renderHeaderAuth() called automatically
     }
   }
 
