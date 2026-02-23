@@ -1008,7 +1008,8 @@
               here once you complete the strength test.
             </p>
 
-            <button class="btn-p" style="width:100%;padding:11px;font-size:14px">
+            <button id="dayBtn1" class="btn-p" onclick="markDayComplete(selectedWeek,1)"
+              style="width:100%;padding:11px;font-size:14px">
               ✓ Mark Day Complete
             </button>
           </div><!-- /Day 1 -->
@@ -1055,7 +1056,8 @@
               here once you complete the strength test.
             </p>
 
-            <button class="btn-p" style="width:100%;padding:11px;font-size:14px">
+            <button id="dayBtn2" class="btn-p" onclick="markDayComplete(selectedWeek,2)"
+              style="width:100%;padding:11px;font-size:14px">
               ✓ Mark Day Complete
             </button>
           </div><!-- /Day 2 -->
@@ -1102,7 +1104,8 @@
               here once you complete the strength test.
             </p>
 
-            <button class="btn-p" style="width:100%;padding:11px;font-size:14px">
+            <button id="dayBtn3" class="btn-p" onclick="markDayComplete(selectedWeek,3)"
+              style="width:100%;padding:11px;font-size:14px">
               ✓ Mark Day Complete
             </button>
           </div><!-- /Day 3 -->
@@ -1246,9 +1249,13 @@
           <p style="font-size:14px;color:#166534;font-weight:600">Signed in ✓</p>
           <p id="welcomeEmail" style="font-size:12px;color:#15803d;margin-top:4px"></p>
         </div>
-        <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:18px">
-          Your push-up data is saved locally on this device and persists between sessions.
+        <p style="font-size:11px;font-family:'Oswald',sans-serif;font-weight:600;
+          text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px">
+          Completed Sessions
         </p>
+        <div id="profileCompletions" style="margin-bottom:18px;min-height:32px">
+          <p style="font-size:12px;color:var(--subtle)">Loading…</p>
+        </div>
         <button class="btn-g" onclick="signOut()"
           style="width:100%;justify-content:center;padding:10px">
           Sign Out
@@ -1384,10 +1391,12 @@
   _supa.auth.onAuthStateChange((_event, session) => {
     _supaUser = session?.user ?? null;
     if (typeof renderHeaderAuth === 'function') renderHeaderAuth();
+    if (_supaUser) loadCompletionsFromSupabase();
   });
   _supa.auth.getSession().then(({ data }) => {
     _supaUser = data.session?.user ?? null;
     if (typeof renderHeaderAuth === 'function') renderHeaderAuth();
+    if (_supaUser) loadCompletionsFromSupabase();
   });
 
   function defaultState() {
@@ -1867,6 +1876,67 @@
     }, 350);
   }
 
+  // ── Cloud completions ─────────────────────────────────────────
+  async function markDayComplete(weekNum, dayNum) {
+    const dayKeys = ['', 'Mon', 'Wed', 'Fri'];
+    const wk      = weekKey();
+    const key     = `${wk}-${dayKeys[dayNum]}`;
+    const wasDone = !!(S.completions[key]);
+
+    if (wasDone) delete S.completions[key];
+    else         S.completions[key] = true;
+    save(S);
+    renderChallenge();
+    renderDayCards(weekNum);
+
+    if (_supaUser) {
+      if (!wasDone) {
+        await _supa.from('completions').upsert(
+          { user_id: _supaUser.id, week_num: weekNum, day_num: dayNum },
+          { onConflict: 'user_id,week_num,day_num' }
+        );
+      } else {
+        await _supa.from('completions').delete()
+          .eq('user_id', _supaUser.id)
+          .eq('week_num', weekNum)
+          .eq('day_num', dayNum);
+      }
+    }
+  }
+
+  async function loadCompletionsFromSupabase() {
+    if (!_supaUser) return;
+    const { data } = await _supa
+      .from('completions')
+      .select('week_num, day_num, completed_at')
+      .eq('user_id', _supaUser.id)
+      .order('completed_at', { ascending: false })
+      .limit(20);
+    renderProfileCompletions(data || []);
+  }
+
+  function renderProfileCompletions(rows) {
+    const el = document.getElementById('profileCompletions');
+    if (!el) return;
+    if (!rows.length) {
+      el.innerHTML = '<p style="font-size:12px;color:var(--subtle)">No sessions completed yet.</p>';
+      return;
+    }
+    const days = ['', 'Monday', 'Wednesday', 'Friday'];
+    el.innerHTML = rows.map(r => {
+      const date = new Date(r.completed_at)
+        .toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'2-digit' });
+      return `<div style="display:flex;justify-content:space-between;align-items:center;
+        padding:5px 0;border-bottom:1px solid var(--border)">
+        <span style="font-size:12px;font-weight:500;color:var(--text)">
+          Week ${r.week_num} · ${days[r.day_num]}
+        </span>
+        <span style="font-size:11px;color:var(--muted)">${date}</span>
+      </div>`;
+    }).join('');
+  }
+  // ─────────────────────────────────────────────────────────────
+
   // ─────────────────────────────────────────────────
   // SIGN-UP MODAL
   // ─────────────────────────────────────────────────
@@ -1875,6 +1945,7 @@
     if (_supaUser) {
       showModalView('welcomeBack');
       document.getElementById('welcomeEmail').textContent = `Signed in as ${_supaUser.email}`;
+      loadCompletionsFromSupabase();
     } else {
       showModalView('signupForm');
       document.getElementById('signupSuccess').style.display = 'none';
@@ -1895,6 +1966,7 @@
     if (_supaUser) {
       showModalView('welcomeBack');
       document.getElementById('welcomeEmail').textContent = `Signed in as ${_supaUser.email}`;
+      loadCompletionsFromSupabase();
       return;
     }
     showModalView('signinForm');
@@ -2161,6 +2233,22 @@
             >
             ${recSpan}
           </div>`;
+      }
+
+      // ── Button state (completed vs not) ─────────────────────
+      const dayKeys = ['', 'Mon', 'Wed', 'Fri'];
+      const isDone = !!(S.completions[`${weekKey()}-${dayKeys[di]}`]);
+      const dayBtn = document.getElementById(`dayBtn${di}`);
+      if (dayBtn) {
+        if (isDone) {
+          dayBtn.textContent = '✓ Completed!';
+          dayBtn.className = 'btn-s';
+          dayBtn.style.cssText = 'width:100%;padding:11px;font-size:14px;justify-content:center';
+        } else {
+          dayBtn.textContent = '✓ Mark Day Complete';
+          dayBtn.className = 'btn-p';
+          dayBtn.style.cssText = 'width:100%;padding:11px;font-size:14px';
+        }
       }
     });
   }
