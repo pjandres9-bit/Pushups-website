@@ -2050,16 +2050,15 @@
   }
 
   function handleSet5Input(weekNum, dayIdx, value) {
-    const v    = parseInt(value);
-    const recEl = document.getElementById(`set5rec_${dayIdx}`);
-    if (!recEl) return;
+    const v     = parseInt(value);
+    const recEl = document.getElementById(`set5rec_${dayIdx}`); // only exists on Day 3
     if (value === '' || isNaN(v) || v <= 0) {
       localStorage.removeItem(`su_set5_w${weekNum}_d${dayIdx}`);
-      recEl.innerHTML = '';
+      if (recEl) recEl.innerHTML = '';
       return;
     }
     localStorage.setItem(`su_set5_w${weekNum}_d${dayIdx}`, String(v));
-    recEl.innerHTML = calcSet5Recommendation(weekNum, v);
+    if (recEl) recEl.innerHTML = calcSet5Recommendation(weekNum, v);
   }
   // ─────────────────────────────────────────────────────────────
 
@@ -2132,12 +2131,15 @@
 
       table.appendChild(tbody);
 
-      // ── Set 5 log ─────────────────────────────────
+      // ── Set 5 log (all days; recommendation text on Day 3 only) ─
       const logEl = document.getElementById(`set5Log${di}`);
       if (logEl) {
         const savedKey = `su_set5_w${weekNum}_d${di}`;
         const saved    = localStorage.getItem(savedKey) || '';
-        const rec      = saved ? calcSet5Recommendation(weekNum, parseInt(saved)) : '';
+        const rec      = (di === 3 && saved) ? calcSet5Recommendation(weekNum, parseInt(saved)) : '';
+        const recSpan  = di === 3
+          ? `<span id="set5rec_${di}" style="font-size:12px;color:var(--brand);font-weight:600;line-height:1.45">${rec}</span>`
+          : '';
         logEl.innerHTML = `
           <div style="margin-top:10px;padding:10px 12px;
             background:var(--brand-bg);border:1px solid var(--brand-border);
@@ -2157,10 +2159,7 @@
               onblur="this.style.borderColor='var(--border-str)'"
               oninput="handleSet5Input(${weekNum},${di},this.value)"
             >
-            <span id="set5rec_${di}"
-              style="font-size:12px;color:var(--brand);font-weight:600;line-height:1.45">
-              ${rec}
-            </span>
+            ${recSpan}
           </div>`;
       }
     });
