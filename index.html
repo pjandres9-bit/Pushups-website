@@ -997,6 +997,7 @@
                 <tr class="max-row"><td>Max Set</td><td>Max effort →</td></tr>
               </tbody>
             </table>
+            <div id="set5Log1"></div>
 
             <p style="
               font-size:11px;color:var(--subtle);line-height:1.55;
@@ -1043,6 +1044,7 @@
                 <tr class="max-row"><td>Max Set</td><td>Max effort →</td></tr>
               </tbody>
             </table>
+            <div id="set5Log2"></div>
 
             <p style="
               font-size:11px;color:var(--subtle);line-height:1.55;
@@ -1089,6 +1091,7 @@
                 <tr class="max-row"><td>Max Set</td><td>Max effort →</td></tr>
               </tbody>
             </table>
+            <div id="set5Log3"></div>
 
             <p style="
               font-size:11px;color:var(--subtle);line-height:1.55;
@@ -2031,6 +2034,31 @@
     renderDayCards(selectedWeek);
   }
 
+  // ── Set 5 logger ────────────────────────────────────────────
+  function calcSet5Recommendation(weekNum, maxReps) {
+    if (!maxReps || maxReps <= 0) return '';
+    const nextWeek = weekNum + 1;
+    if (nextWeek > 6) return '🏆 Ready for the Final Test!';
+    const nextTracks = WEEK_DATA[nextWeek]?.tracks;
+    if (!nextTracks) return '';
+    const tIdx = getTrackIndex(nextWeek, maxReps);
+    return `→ Week ${nextWeek}: follow <strong>"${nextTracks[tIdx].label}"</strong> column`;
+  }
+
+  function handleSet5Input(weekNum, dayIdx, value) {
+    const v    = parseInt(value);
+    const recEl = document.getElementById(`set5rec_${dayIdx}`);
+    if (!recEl) return;
+    if (value === '' || isNaN(v) || v <= 0) {
+      localStorage.removeItem(`su_set5_w${weekNum}_d${dayIdx}`);
+      recEl.innerHTML = '';
+      return;
+    }
+    localStorage.setItem(`su_set5_w${weekNum}_d${dayIdx}`, String(v));
+    recEl.innerHTML = calcSet5Recommendation(weekNum, v);
+  }
+  // ─────────────────────────────────────────────────────────────
+
   function renderDayCards(weekNum) {
     const wd = WEEK_DATA[weekNum];
     const max = S.pushUpMax;
@@ -2099,6 +2127,38 @@
       tbody.appendChild(maxTr);
 
       table.appendChild(tbody);
+
+      // ── Set 5 log ─────────────────────────────────
+      const logEl = document.getElementById(`set5Log${di}`);
+      if (logEl) {
+        const savedKey = `su_set5_w${weekNum}_d${di}`;
+        const saved    = localStorage.getItem(savedKey) || '';
+        const rec      = saved ? calcSet5Recommendation(weekNum, parseInt(saved)) : '';
+        logEl.innerHTML = `
+          <div style="margin-top:10px;padding:10px 12px;
+            background:var(--brand-bg);border:1px solid var(--brand-border);
+            border-radius:var(--r-sm);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap">
+              📝 Set 5 reps:
+            </span>
+            <input type="number" min="0" max="300"
+              id="set5input_${di}"
+              value="${saved}"
+              placeholder="how many?"
+              style="width:80px;padding:4px 8px;
+                border:1px solid var(--border-str);border-radius:6px;
+                font-size:13px;font-family:'Inter',sans-serif;outline:none;
+                transition:border-color .15s ease;background:#fff"
+              onfocus="this.style.borderColor='var(--brand)'"
+              onblur="this.style.borderColor='var(--border-str)'"
+              oninput="handleSet5Input(${weekNum},${di},this.value)"
+            >
+            <span id="set5rec_${di}"
+              style="font-size:12px;color:var(--brand);font-weight:600;line-height:1.45">
+              ${rec}
+            </span>
+          </div>`;
+      }
     });
   }
 
