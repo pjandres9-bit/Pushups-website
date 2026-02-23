@@ -1924,12 +1924,10 @@
 
   // Map max push-up score → recommended starting week (1-7)
   function calcRecommendedWeek(max) {
-    if (max < 10) return 1;
-    if (max < 15) return 2;
-    if (max < 20) return 3;
-    if (max < 25) return 4;
-    if (max < 30) return 5;
-    return 6; // 30+ reps → Week 6 (Final Test is Week 7, not a training week)
+    if (max < 10) return 1;  // Week 1: < 10 reps
+    if (max < 30) return 2;  // Week 2: 10–29 reps
+    if (max <= 40) return 3; // Week 3: 30–40 reps
+    return 4;                // Week 4: 41+ reps
   }
 
   // Click a week pill (null = back to overview)
