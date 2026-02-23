@@ -1833,8 +1833,14 @@
     badge.style.border       = `1px solid ${lvl.border}`;
     badge.style.color        = lvl.color;
 
+    const _wd  = WEEK_DATA[week];
+    const _ti  = _wd ? getTrackIndex(week, n) : null;
+    const _col = (_wd && _ti !== null) ? _wd.tracks[_ti].label : null;
+
     document.getElementById('rMax').textContent      = n;
-    document.getElementById('rText').textContent     = LEVEL_MSG[lvl.name];
+    document.getElementById('rText').textContent     = _col
+      ? `With ${n} reps, start on Week ${week} and follow the "${_col}" column.`
+      : LEVEL_MSG[lvl.name];
     document.getElementById('rWeekNum').textContent  = week;
     document.getElementById('rWeekLbl').textContent  = `WEEK ${week}`;
     document.getElementById('rWeekDesc').textContent = WEEK_DESC[week];
