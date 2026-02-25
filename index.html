@@ -979,6 +979,15 @@
               style="width:100%;padding:11px;font-size:14px">
               ✓ Mark Day Complete
             </button>
+            <button id="dayRestoreBtn1" onclick="resetDayComplete(selectedWeek,1)"
+              style="display:none;width:100%;margin-top:6px;padding:7px;font-size:11px;
+                background:none;border:1px solid var(--border-str);border-radius:var(--r-sm);
+                color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;
+                transition:color .15s ease,border-color .15s ease"
+              onmouseover="this.style.color='var(--text)';this.style.borderColor='#94a3b8'"
+              onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border-str)'">
+              ↺ Restore
+            </button>
           </div><!-- /Day 1 -->
 
           <!-- Day 2: Wednesday -->
@@ -1018,6 +1027,15 @@
               style="width:100%;padding:11px;font-size:14px">
               ✓ Mark Day Complete
             </button>
+            <button id="dayRestoreBtn2" onclick="resetDayComplete(selectedWeek,2)"
+              style="display:none;width:100%;margin-top:6px;padding:7px;font-size:11px;
+                background:none;border:1px solid var(--border-str);border-radius:var(--r-sm);
+                color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;
+                transition:color .15s ease,border-color .15s ease"
+              onmouseover="this.style.color='var(--text)';this.style.borderColor='#94a3b8'"
+              onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border-str)'">
+              ↺ Restore
+            </button>
           </div><!-- /Day 2 -->
 
           <!-- Day 3: Friday -->
@@ -1056,6 +1074,15 @@
             <button id="dayBtn3" class="btn-p" onclick="markDayComplete(selectedWeek,3)"
               style="width:100%;padding:11px;font-size:14px">
               ✓ Mark Day Complete
+            </button>
+            <button id="dayRestoreBtn3" onclick="resetDayComplete(selectedWeek,3)"
+              style="display:none;width:100%;margin-top:6px;padding:7px;font-size:11px;
+                background:none;border:1px solid var(--border-str);border-radius:var(--r-sm);
+                color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;
+                transition:color .15s ease,border-color .15s ease"
+              onmouseover="this.style.color='var(--text)';this.style.borderColor='#94a3b8'"
+              onmouseout="this.style.color='var(--muted)';this.style.borderColor='var(--border-str)'">
+              ↺ Restore
             </button>
           </div><!-- /Day 3 -->
 
@@ -1870,6 +1897,21 @@
     }
   }
 
+  async function resetDayComplete(weekNum, dayNum) {
+    const dayKeys = ['', 'Mon', 'Wed', 'Fri'];
+    const key = `${weekKey()}-${dayKeys[dayNum]}`;
+    delete S.completions[key];
+    save(S);
+    renderChallenge();
+    renderDayCards(weekNum);
+    if (_supaUser) {
+      await _supa.from('completions').delete()
+        .eq('user_id', _supaUser.id)
+        .eq('week_num', weekNum)
+        .eq('day_num', dayNum);
+    }
+  }
+
   async function loadCompletionsFromSupabase() {
     if (!_supaUser) return;
     const { data } = await _supa
@@ -2258,6 +2300,7 @@
       const dayKeys = ['', 'Mon', 'Wed', 'Fri'];
       const isDone = !!(S.completions[`${weekKey()}-${dayKeys[di]}`]);
       const dayBtn = document.getElementById(`dayBtn${di}`);
+      const dayRestoreBtn = document.getElementById(`dayRestoreBtn${di}`);
       if (dayBtn) {
         if (isDone) {
           dayBtn.textContent = '✓ Completed!';
@@ -2268,6 +2311,9 @@
           dayBtn.className = 'btn-p';
           dayBtn.style.cssText = 'width:100%;padding:11px;font-size:14px';
         }
+      }
+      if (dayRestoreBtn) {
+        dayRestoreBtn.style.display = isDone ? 'block' : 'none';
       }
     });
   }
