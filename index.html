@@ -1225,29 +1225,14 @@
           <p style="font-size:14px;color:#166534;font-weight:600">Signed in ✓</p>
           <p id="welcomeEmail" style="font-size:12px;color:#15803d;margin-top:4px"></p>
         </div>
-        <p style="font-size:11px;font-family:'Oswald',sans-serif;font-weight:600;
-          text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px">
-          Completed Sessions
-        </p>
-        <div id="profileCompletions" style="margin-bottom:18px;min-height:32px">
-          <p style="font-size:12px;color:var(--subtle)">Loading…</p>
-        </div>
 
         <p style="font-size:11px;font-family:'Oswald',sans-serif;font-weight:600;
           text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px">
-          Progress Backup
+          Max Push-Ups Test
         </p>
-        <div style="display:flex;gap:8px;margin-bottom:6px">
-          <button id="saveProgressBtn" onclick="saveProgressToSupabase()"
-            class="btn-g" style="flex:1;justify-content:center;padding:9px;font-size:12px">
-            ☁ Save Progress
-          </button>
-          <button id="restoreProgressBtn" onclick="restoreProgressFromSupabase()"
-            class="btn-g" style="flex:1;justify-content:center;padding:9px;font-size:12px">
-            ↓ Restore Progress
-          </button>
+        <div id="profileMaxTest" style="margin-bottom:18px">
+          <p style="font-size:12px;color:var(--subtle)">No test recorded yet.</p>
         </div>
-        <div id="progressStatus" style="min-height:18px;margin-bottom:14px"></div>
 
         <button class="btn-g" onclick="signOut()"
           style="width:100%;justify-content:center;padding:10px">
@@ -1384,12 +1369,10 @@
   _supa.auth.onAuthStateChange((_event, session) => {
     _supaUser = session?.user ?? null;
     if (typeof renderHeaderAuth === 'function') renderHeaderAuth();
-    if (_supaUser) loadCompletionsFromSupabase();
   });
   _supa.auth.getSession().then(({ data }) => {
     _supaUser = data.session?.user ?? null;
     if (typeof renderHeaderAuth === 'function') renderHeaderAuth();
-    if (_supaUser) loadCompletionsFromSupabase();
   });
 
   function defaultState() {
@@ -1923,6 +1906,25 @@
     renderProfileCompletions(data || []);
   }
 
+  function renderProfileMaxTest() {
+    const el = document.getElementById('profileMaxTest');
+    if (!el) return;
+    if (S.pushUpMax === null || S.pushUpMax === undefined) {
+      el.innerHTML = '<p style="font-size:12px;color:var(--subtle)">No test recorded yet.</p>';
+      return;
+    }
+    const dateStr = S.testDate
+      ? new Date(S.testDate).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' })
+      : null;
+    el.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;
+        padding:10px 14px;background:var(--brand-bg);border:1px solid var(--brand-border);
+        border-radius:var(--r-sm)">
+        <span style="font-size:13px;font-weight:600;color:var(--text)">${S.pushUpMax} push-ups</span>
+        ${dateStr ? `<span style="font-size:11px;color:var(--muted)">${dateStr}</span>` : ''}
+      </div>`;
+  }
+
   function renderProfileCompletions(rows) {
     const el = document.getElementById('profileCompletions');
     if (!el) return;
@@ -2006,7 +2008,7 @@
     if (_supaUser) {
       showModalView('welcomeBack');
       document.getElementById('welcomeEmail').textContent = `Signed in as ${_supaUser.email}`;
-      loadCompletionsFromSupabase();
+      renderProfileMaxTest();
     } else {
       showModalView('signupForm');
       document.getElementById('signupSuccess').style.display = 'none';
@@ -2027,7 +2029,7 @@
     if (_supaUser) {
       showModalView('welcomeBack');
       document.getElementById('welcomeEmail').textContent = `Signed in as ${_supaUser.email}`;
-      loadCompletionsFromSupabase();
+      renderProfileMaxTest();
       return;
     }
     showModalView('signinForm');
