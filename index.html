@@ -1210,7 +1210,7 @@
           text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:8px">
           Progress Backup
         </p>
-        <div style="display:flex;gap:8px;margin-bottom:18px">
+        <div style="display:flex;gap:8px;margin-bottom:6px">
           <button id="saveProgressBtn" onclick="saveProgressToSupabase()"
             class="btn-g" style="flex:1;justify-content:center;padding:9px;font-size:12px">
             ☁ Save Progress
@@ -1220,6 +1220,7 @@
             ↓ Restore Progress
           </button>
         </div>
+        <div id="progressStatus" style="min-height:18px;margin-bottom:14px"></div>
 
         <button class="btn-g" onclick="signOut()"
           style="width:100%;justify-content:center;padding:10px">
@@ -1901,6 +1902,14 @@
     }).join('');
   }
 
+  function _setProgressStatus(msg, color) {
+    const el = document.getElementById('progressStatus');
+    if (!el) return;
+    el.innerHTML = `<p style="font-size:11px;color:${color};line-height:1.5">${msg}</p>`;
+    clearTimeout(_setProgressStatus._t);
+    _setProgressStatus._t = setTimeout(() => { el.innerHTML = ''; }, 4000);
+  }
+
   async function saveProgressToSupabase() {
     if (!_supaUser) return;
     const btn = document.getElementById('saveProgressBtn');
@@ -1912,13 +1921,12 @@
       challenge_start_week: S.challengeStartWeek,
       updated_at:           new Date().toISOString(),
     }, { onConflict: 'user_id' });
-    btn.disabled = false;
+    btn.disabled = false; btn.textContent = '☁ Save Progress';
     if (error) {
-      btn.textContent = 'Error — try again';
+      _setProgressStatus('Error saving: ' + error.message, '#dc2626');
     } else {
-      btn.textContent = '✓ Saved!';
+      _setProgressStatus('✓ Progress saved to your account.', '#16a34a');
     }
-    setTimeout(() => { btn.textContent = '☁ Save Progress'; }, 2200);
   }
 
   async function restoreProgressFromSupabase() {
@@ -1929,10 +1937,13 @@
       .select('push_up_max, test_date, challenge_start_week')
       .eq('user_id', _supaUser.id)
       .single();
-    btn.disabled = false;
-    if (error || !data) {
-      btn.textContent = 'Nothing saved yet';
-      setTimeout(() => { btn.textContent = '↓ Restore Progress'; }, 2200);
+    btn.disabled = false; btn.textContent = '↓ Restore Progress';
+    if (error) {
+      _setProgressStatus('Error: ' + error.message, '#dc2626');
+      return;
+    }
+    if (!data) {
+      _setProgressStatus('No saved progress found. Save first.', '#92400e');
       return;
     }
     if (data.push_up_max          !== null) S.pushUpMax          = data.push_up_max;
@@ -1941,8 +1952,7 @@
     save(S);
     render();
     renderChallengeProgram();
-    btn.textContent = '✓ Restored!';
-    setTimeout(() => { btn.textContent = '↓ Restore Progress'; }, 2200);
+    _setProgressStatus('✓ Progress restored successfully.', '#16a34a');
   }
   // ─────────────────────────────────────────────────────────────
 
