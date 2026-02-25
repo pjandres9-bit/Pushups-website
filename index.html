@@ -1936,7 +1936,7 @@
     const { data, error } = await _supa.from('user_progress')
       .select('push_up_max, test_date, challenge_start_week')
       .eq('user_id', _supaUser.id)
-      .single();
+      .maybeSingle();
     btn.disabled = false; btn.textContent = '↓ Restore Progress';
     if (error) {
       _setProgressStatus('Error: ' + error.message, '#dc2626');
